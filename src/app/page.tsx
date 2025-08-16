@@ -1,103 +1,78 @@
-import Image from "next/image";
+"use client"; //コンポーネントがサーバーコンポーネントではなく、クライアントコンポーネントであることを示す
+
+import { useState } from "react";
+import SuggestionCard from "@/components/SuggestionCard"; 
+
+const dummySuggestions = [// ダミーデータとして提案リストを定義 実際に時間をどう決めるかは検討中
+  { id: 1, title: '郵便局で荷物を出す', taskTime: 10, travelTime: 15, isPossible: true },
+  { id: 2, title: '近くのカフェでコーヒーを飲む', taskTime: 30, travelTime: 10, isPossible: true },
+  { id: 3, title: '書店で新刊をチェック', taskTime: 20, travelTime: 25, isPossible: false },
+  { id: 4, title: 'スーパーで昼食を買う', taskTime: 5, travelTime: 8, isPossible: true },
+  { id: 5, title: '隣町の人気ラーメン店に行く', taskTime: 40, travelTime: 45, isPossible: false },
+];
+
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [avaivlavleTime, setAvailableTime] = useState(""); // スキマ時間な時間を管理するための状態変数
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {// フォームの送信時に呼ばれる関数
+    event.preventDefault(); // フォームのデフォルトの送信動作を防ぐ
+    alert(`スキマ時間: ${avaivlavleTime} 分`); // 入力されたスキマ時間をがわかるようアラートで表示
+  };
+  return (
+     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50">
+      <div className="w-full max-w-md text-center">
+        <h1 className="text-4xl font-bold text-gray-800">Sukimable</h1>
+        <p className="mt-2 text-lg text-gray-600">
+          あなたの予定の隙間､埋めます
+        </p>
+
+        {/* スキマ時間を入力するためのフォーム */}
+        <form onSubmit={handleSubmit} className="mt-8">
+          <label
+            htmlFor="time-input"
+            className="block text-sm font-medium text-gray-700 items-center"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            スキマ時間 (分):
+          </label>
+          {/* 入力のさせ方もっと見やすいやり方ありそう*/}
+          <div className="mt-2 flex rouded-md shadow-sm">
+            <input
+              type="number"
+              id="time-input"
+              value={avaivlavleTime}
+              onChange={(e) => setAvailableTime(e.target.value)}
+              className="block w-full flex-1 rounded-none rounded-l-md border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              placeholder="例: 30"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <span className="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">分</span>
+          </div>
+          <button
+            type="submit"
+            className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Read our docs
-          </a>
+            間に合うことを探す
+          </button>
+        </form>
+      </div>
+
+      {/* 提案カードを表示するためのセクション */}
+      <div className="mt-12">
+          <h2 className="text-xl font-bold text-gray-800">提案リスト</h2>
+          <div className="mt-4 space-y-4">
+            {/* 仮にサンプルデータから取り出す*/}
+            
+            {dummySuggestions.map((suggestion) => (
+              <SuggestionCard
+                key={suggestion.id} // 各カードの一意のキーとしてIDを使用
+                title={suggestion.title}
+                taskTime={suggestion.taskTime}
+                travelTime={suggestion.travelTime}
+                isPossible={suggestion.isPossible}
+              />
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </main>
   );
 }
