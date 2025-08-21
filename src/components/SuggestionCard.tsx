@@ -9,7 +9,7 @@ type SuggestionCardProps = {
 export default function SuggestionCard({ title, taskTime, travelTime, isPossible }: SuggestionCardProps) {// コンポーネントの引数として、SuggestionCardProps型を受け取る
   const totalTime = taskTime + travelTime;// 合計時間を計算
 
-  // isPossible の値 (true/false) によって、カードの見た目を少し変える
+  // isPossible の値 (true/false) によって、カードの見た目を変える
   const cardClasses = `
     bg-white p-4 rounded-lg shadow-md border-l-4
     ${isPossible ? 'border-green-500' : 'border-red-500 opacity-60'}
