@@ -16,6 +16,11 @@ export default function Header() {
         </Link>
         {/* ログインボタンなどここにかくよ*/}
         <div className="flex items-center gap-4">
+          <Link 
+          href="/task"
+          className ="text-gray-600 hover:text-indigo-600">
+            マイアクション追加
+          </Link>
           <img
             src={session?.user?.image || "/default-avatar.png"}
             alt="User Avatar"
