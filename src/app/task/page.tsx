@@ -2,17 +2,28 @@
 
 import { useState } from "react"
 import Header from "@/components/Header"
+import axios from "axios"
+import { PostTask } from "../api/task/route"
+import { title } from "process"
+
+
 
 export default function Home() {
   const [actionName, setActionName] = useState("")
   const [requiredTime, setRequiredTime] = useState("")
   const [description, setDescription] = useState("")
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Action Name:", actionName)
     console.log("Required Time:", requiredTime)
     console.log("Description:", description)
+    axios.post<PostTask>('/api/task', {
+        title: actionName,
+        description: description,
+        duration: Number(requiredTime)
+  })
   }
 
   return (

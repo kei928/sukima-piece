@@ -1,6 +1,18 @@
 import { prisma } from '@/libs/prismaClient';
-import NextAuth, { type AuthOptions, type NextAuthOptions } from 'next-auth';
+import NextAuth, { ISODateString, type AuthOptions, type NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+
+declare module 'next-auth' {
+    interface Session {
+        user?: {
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+            id?: string;
+        };
+        expires: ISODateString;
+    }
+}
 
 export const authOptions: AuthOptions = {
     providers: [
