@@ -11,17 +11,70 @@ const dummySuggestions = [// ダミーデータとして提案リストを定義
   { id: 5, title: '隣町の人気ラーメン店に行く', taskTime: 40, travelTime: 45, isPossible: false },
 ];
 
+type Location = {// 緯度経度を保存するための型
+  latitude: number;
+  longitude: number;
+};
 
 export default function Home() {
   const [avaivlavleTime, setAvailableTime] = useState(""); // スキマ時間な時間を管理するための状態変数
-
+  const [location, setLocation] = useState<Location | null>(null); // 緯度経度を保存するstate
+  const [loading, setLoading] = useState(false); // 読み込み中かどうかを示すstate
+  const [error, setError] = useState<string | null>(null); // エラーメッセージを保存するstate
+  
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {// フォームの送信時に呼ばれる関数
     event.preventDefault(); // フォームのデフォルトの送信動作を防ぐ
     alert(`スキマ時間: ${avaivlavleTime} 分`); // 入力されたスキマ時間をがわかるようアラートで表示
   };
+  // 現在地を取得する関数
+  const handleGetCurrentLocation = () => {
+    setLoading(true);
+    setError(null);
+
+    // ブラウザのGeolocation APIが使えるかチェック
+    if (!navigator.geolocation) {
+      setError("お使いのブラウザでは位置情報サービスがサポートされていません。");
+      setLoading(false);
+      return;
+    }
+
+    // 位置情報の取得をリクエスト
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLoading(false);
+      },
+      (err) => {
+        // ユーザーが許可しなかった場合などのエラー処理
+        setError("位置情報の取得に失敗しました。ブラウザの設定を確認してください。");
+        console.error(err);
+        setLoading(false);
+      }
+    );
+  };
+
   return (
      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50">
       <div className="w-full max-w-md text-center">
+        <div className="mb-6">
+          <button
+            onClick={handleGetCurrentLocation}
+            disabled={loading}
+            className="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400"
+          >
+            {loading ? '現在地を取得中…' : '現在地を取得する'}
+          </button>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {location && (
+            <div className="text-green-700 text-sm mt-2 p-2 bg-green-50 rounded-md">
+              <p>位置情報を取得</p>
+              <p>(緯度: {location.latitude.toFixed(4)}, 経度: {location.longitude.toFixed(4)})</p>
+            </div>
+          )}
+        </div>
         <h1 className="text-4xl font-bold text-gray-800">Sukimable</h1>
         <p className="mt-2 text-lg text-gray-600">
           あなたの予定の隙間､埋めます
