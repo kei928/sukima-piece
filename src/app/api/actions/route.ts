@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 
-export type PostTask = {
+export type PostAction = {
     title: string;
     duration: number;
     description?: string;
@@ -22,10 +22,10 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             );
         }
 
-        const {title,duration,description}: PostTask = await req.json();
+        const {title,duration,description}: PostAction = await req.json();
         const userId = session.user.id;
 
-        const task = await prisma.task.create({
+        const action = await prisma.action.create({
             data: {
                 title,
                 duration,
@@ -34,7 +34,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             },
         });
 
-        return NextResponse.json(task, { status: 200 }); // 成功時は作成されたタスクを返す
+        return NextResponse.json(action, { status: 200 }); // 成功時は作成されたタスクを返す
     } catch (error) {
         console.error(error);
         return NextResponse.json(

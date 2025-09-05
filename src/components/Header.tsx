@@ -17,7 +17,7 @@ export default function Header() {
         {/* ログインボタンなどここにかくよ*/}
         <div className="flex items-center gap-4">
           <Link 
-          href="/task"
+          href="/actions"
           className ="text-gray-600 hover:text-indigo-600">
             マイアクション追加
           </Link>

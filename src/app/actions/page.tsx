@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Header from "@/components/Header"
 import axios from "axios"
-import { PostTask } from "../api/task/route"
+import { PostAction } from "../api/actions/route"
 import { title } from "process"
 
 
@@ -19,7 +19,7 @@ export default function Home() {
     console.log("Action Name:", actionName)
     console.log("Required Time:", requiredTime)
     console.log("Description:", description)
-    axios.post<PostTask>('/api/task', {
+    axios.post<PostAction>('/api/actions', {
         title: actionName,
         description: description,
         duration: Number(requiredTime)
