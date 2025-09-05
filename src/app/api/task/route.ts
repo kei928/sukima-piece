@@ -13,17 +13,28 @@ export type PostTask = {
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
     try {
         const session = await getServerSession(authOptions);
+
+        // セッションまたはユーザーIDが存在しない場合はエラーを返す
+        if (!session || !session.user?.id) {
+            return NextResponse.json(
+                { message: '認証されていません' },
+                { status: 401 },
+            );
+        }
+
         const {title,duration,description}: PostTask = await req.json();
-        const task=await prisma.task.create({
+        const userId = session.user.id;
+
+        const task = await prisma.task.create({
             data: {
                 title,
                 duration,
                 description,
-                userId: session?.user?.id as string,
+                userId: userId, // 確実に存在するuserIdを使用
             },
+        });
 
-        })
-        return NextResponse.json(0, { status: 200 });
+        return NextResponse.json(task, { status: 200 }); // 成功時は作成されたタスクを返す
     } catch (error) {
         console.error(error);
         return NextResponse.json(
@@ -32,7 +43,3 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         );
     }
 };
-
-
-
-

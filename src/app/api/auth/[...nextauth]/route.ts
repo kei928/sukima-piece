@@ -1,6 +1,7 @@
 import { prisma } from '@/libs/prismaClient';
 import NextAuth, { ISODateString, type AuthOptions, type NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { JWT } from 'next-auth/jwt';
 
 declare module 'next-auth' {
     interface Session {
@@ -14,6 +15,12 @@ declare module 'next-auth' {
     }
 }
 
+declare module 'next-auth/jwt' {
+    interface JWT {
+        id?: string;
+    }
+}
+
 export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
@@ -24,35 +31,32 @@ export const authOptions: AuthOptions = {
     secret: process.env.NEXTAUTH_SECRET as string,
     callbacks: {
         async jwt({ token, account, profile }) {
-            if (!account) {
-                return token;
+            if (account && profile) {
+                const userId = account.providerAccountId;
+                token.id = userId; // トークンにIDを追加
+
+                await prisma.user.upsert({
+                    where: { id: userId },
+                    create: {
+                        id: userId,
+                        name: profile.name,
+                        email: profile.email,
+                        image: token.picture,
+                    },
+                    update: {
+                        name: profile.name,
+                        email: profile.email,
+                        image: token.picture,
+                    },
+                });
             }
-
-            const userId = account.providerAccountId;
-            const userName = profile?.name as string;
-            const userEmail = profile?.email as string;
-            const userImage = token?.picture || '';
-
-            await prisma.user.upsert({
-                where: {
-                    id: userId,
-                },
-                create: {
-                    id: userId,
-                    name: userName,
-                    email: userEmail,
-                    image: userImage,
-                },
-                update: {
-                    name: userName,
-                    email: userEmail,
-                    image: userImage,
-                },
-            });
             return token;
         },
-        async session({ session, token, _user }: any) {
-            session.user.id = token.sub;
+        async session({ session, token }) {
+            // セッションにIDを格納
+            if (session.user) {
+                session.user.id = token.id;
+            }
             return session;
         },
     }
