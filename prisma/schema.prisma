@@ -45,7 +45,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tasks         Task[]
+  actions Action[] 
 }
 
 
@@ -57,22 +57,22 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Task{
+model Action{
   id String @id @default(cuid())
   title String
   description String?
+  address String?
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   duration Int
-  status TaskStatus @default(PENDING)
-  cratedAt DateTime @default(now())
+  status ActionStatus @default(PENDING)
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum TaskStatus {
+enum ActionStatus {
   PENDING      // 未着手
   IN_PROGRESS  // 進行中
   COMPLETED    // 完了
-
 }
 
