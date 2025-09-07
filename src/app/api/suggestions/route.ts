@@ -25,16 +25,30 @@ type DistanceMatrixResponse = {
     error_message?: string;
 };
 
+type GeocodingResponse = {
+    results: {
+        geometry: {
+            location: {
+                lat: number;
+                lng: number;
+            };
+        };
+    }[];
+    status: string;
+};
+
 export type Suggestion = Action & {
     travelTime: number; //移動時間（秒）
     totalTime: number; //合計時間（アクションの所要時間 + 移動時間）
     isPossible: boolean; //利用可能かどうか
+    lat: number; //緯度
+    lng: number; //経度
 };
 
 const getDurations = async (origin: string, destinations: string[], mode: 'transit' | 'walking', apiKey: string): Promise<DistanceMatrixResponse['rows'][0]['elements']> => {
     const destinationsString = destinations.join('|');
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destinationsString}&key=${apiKey}&mode=${mode}`;
-    
+
     const response = await axios.get<DistanceMatrixResponse>(url);
 
     if (response.data.status !== 'OK') {
@@ -79,6 +93,24 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         const origins = `${latitude},${longitude}`;
         const actionAddresses = userActions.map(action => action.address as string);
 
+        //ジオコーディングAPIを使って住所から緯度経度を取得
+        const geocodingPromises = actionAddresses.map(address => {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+            return axios.get<GeocodingResponse>(url);
+        });
+
+        const geocodingResponses = await Promise.all(geocodingPromises);
+
+        const coordinatesMap: { [address: string]: { lat: number, lng: number } } = {};
+        geocodingResponses.forEach((res, index) => {
+            if (res.data.status === 'OK' && res.data.results.length > 0) {
+                const address = actionAddresses[index];
+                coordinatesMap[address] = res.data.results[0].geometry.location;
+            }
+        });
+
+
+
         // まず公共交通機関(transit)で試す ここらへんなんかうまく動いてなさそう
         const transitElements = await getDurations(origins, actionAddresses, 'transit', apiKey);
 
@@ -93,7 +125,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             }
         });
 
-        if(failedActions.length > 0) {
+        if (failedActions.length > 0) {
             // 公共交通機関で失敗したアクションについては徒歩(walking)で再試行 ★
             const failedAddresses = failedActions.map(action => action.address as string);
             const walkingElements = await getDurations(origins, failedAddresses, 'walking', apiKey);
@@ -108,27 +140,25 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
         // 各アクションについて間に合うか判定
         const suggestions: Suggestion[] = userActions.map((action) => {
-            const travelTimeInSeconds = successfulDurations[action.address as string] || 0;
-            
+            const address = action.address as string;
+            const travelTimeInSeconds = successfulDurations[address] || 0;
+            const location = coordinatesMap[address];
+            //座標が取得できなかった場合はスキップ
+            if (!location) return null;
+
             const roundTripTravelTime = Math.ceil((travelTimeInSeconds * 2) / 60);
             const totalTime = action.duration + roundTripTravelTime;
             const isPossible = totalTime <= availableTime;
 
-            // ★★★↓ ここからデバッグ用ログを追加 ↓★★★
-            console.log(`\n--- サーバーログ ---`);
-            console.log(`アクション: "${action.title}"`);
-            console.log(` - 合計時間: ${totalTime} (型: ${typeof totalTime})`);
-            console.log(` - 入力された空き時間: ${availableTime} (型: ${typeof availableTime})`);
-            console.log(` - 判定ロジック: ${totalTime} <= ${availableTime}`);
-            console.log(` - 判定結果 (isPossible): ${isPossible}`);
-            console.log(`--------------------\n`);
             return {
                 ...action,
                 travelTime: roundTripTravelTime,
                 totalTime,
                 isPossible,
+                lat: location.lat,
+                lng: location.lng,
             };
-        });
+        }).filter((s): s is Suggestion => s !== null); // nullを除外
 
         return NextResponse.json(suggestions, { status: 200 });
 
@@ -137,6 +167,9 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         return NextResponse.json(
             { message: '提案の取得に失敗しました' },
             { status: 500 },
-        );
-    }
+        )
+    };
+    
 }
+
+

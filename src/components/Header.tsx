@@ -8,7 +8,7 @@ export default function Header() {
   return (
     <header className="bg-white shadow">
       <div className="flex Container mx-auto px-4 py-6 justify-between items-center">
-        <Link 
+        <Link
           href="/"
           className="text-2xl font-bold text-gray-800 hover:text-indigo-600"
         >
@@ -16,19 +16,17 @@ export default function Header() {
         </Link>
         {/* ログインボタンなどここにかくよ*/}
         <div className="flex items-center gap-4">
-          <Link 
-          href="/actions"
-          className ="text-gray-600 hover:text-indigo-600">
+          <Link href="/actions" className="text-gray-600 hover:text-indigo-600">
             マイアクション追加
           </Link>
           <img
-            src={session?.user?.image || "/default-avatar.png"}
+            src={session?.user?.image || "/guest.png"}
             alt="User Avatar"
             width={30}
             height={30}
             className="rounded-full ml-4"
           />
-          <button onClick={() => signOut()}>logout</button>
+          <button onClick={() => signOut()} className="text-gray-600 hover:text-indigo-600">logout</button>
         </div>
       </div>
     </header>

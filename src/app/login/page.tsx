@@ -6,8 +6,8 @@ export default function Home() {
   console.log(session)
   return (
     <>
-      <button onClick={() => signIn("google")}>login</button>
-      <button onClick={() => signOut()}>logout</button>
+      <button onClick={() => signIn("google")} className="text-gray-600 hover:text-indigo-600">login</button>
+      <button onClick={() => signOut()} className="text-gray-600 hover:text-indigo-600">logout</button>
     </>
   );
 }
