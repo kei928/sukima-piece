@@ -1,39 +1,62 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Header from "@/components/Header"
-import axios from "axios"
-import { PostAction } from "../api/actions/route"
-import { title } from "process"
-
-
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { PostAction } from "../api/actions/route";
+import { Action } from "@prisma/client";
 
 export default function Home() {
-  const [actionName, setActionName] = useState("")
-  const [requiredTime, setRequiredTime] = useState("")
-  const [description, setDescription] = useState("")
+  const [actionName, setActionName] = useState("");
+  const [requiredTime, setRequiredTime] = useState("");
+  const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
 
+  const [actions, setActions] = useState<Action[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Action Name:", actionName)
-    console.log("Required Time:", requiredTime)
-    console.log("Description:", description)
-    axios.post<PostAction>('/api/actions', {
+  const fetchActions = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get<Action[]>("/api/actions");
+      setActions(response.data);
+    } catch (error) {
+      console.error("アクションの取得に失敗しました", error);
+      // ここでエラーメッセージをUIに表示するなどの処理を追加しても良い
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ページが読み込まれた時に一度だけアクションを取得
+  useEffect(() => {
+    fetchActions();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post<PostAction>("/api/actions", {
         title: actionName,
         description: description,
-        duration: Number(requiredTime)
-  })
-  }
+        duration: Number(requiredTime),
+        address: address,
+      });
+      setActionName("");
+      setRequiredTime("");
+      setDescription("");
+      setAddress("");
+      fetchActions(); // 送信後にアクション一覧を再取得
+    } catch (error) {
+      console.error("アクションの送信に失敗しました", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
-      
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        {/*アクション追加フォーム*/}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-8">マイアクション追加</h1>
-          
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* アクション名 */}
             <div>
@@ -45,53 +68,91 @@ export default function Home() {
                 id="actionName"
                 value={actionName}
                 onChange={(e) => setActionName(e.target.value)}
-                placeholder="Value"
+                placeholder="例: カフェで読書"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                required
               />
             </div>
 
-            {/*setumei*/}
+            {/* 説明 */}
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
-                    説明
+                    説明（任意）
                 </label>
                 <textarea
                     id="description"
-                    rows={4}
+                    rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Value"
+                    placeholder="例: 駅前のスターバックスで"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
                 ></textarea>
+            </div>
+            
+            {/* 住所 */}
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-900 mb-2">
+                場所・住所（任意）
+              </label>
+              <input
+                type="text"
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="例: 東京都渋谷区神南１丁目２３−１０"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+              />
             </div>
 
             {/* 所要時間 */}
             <div>
               <label htmlFor="requiredTime" className="block text-sm font-medium text-gray-900 mb-2">
-                所要時間
+                所要時間（分）
               </label>
               <input
-                type="text"
+                type="number"
                 id="requiredTime"
                 value={requiredTime}
                 onChange={(e) => setRequiredTime(e.target.value)}
-                placeholder="Value"
+                placeholder="例: 60"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                required
               />
             </div>
 
-            {/* Submit ボタン */}
             <div className="pt-4">
               <button
                 type="submit"
                 className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-200"
               >
-                Submit
+                アクションを追加する
               </button>
             </div>
           </form>
         </div>
+
+        {/* アクション一覧 */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">マイアクション一覧</h2>
+            {isLoading ? (
+                <p>読み込み中...</p>
+            ) : actions.length > 0 ? (
+                <ul className="space-y-4">
+                    {actions.map((action) => (
+                        <li key={action.id} className="p-4 border rounded-lg bg-gray-50">
+                            <h3 className="font-bold text-lg text-gray-800">{action.title}</h3>
+                            <p className="text-sm text-gray-600 mt-1">{action.description}</p>
+                            <p className="text-sm text-gray-600 mt-1"><strong>場所:</strong> {action.address || '指定なし'}</p>
+                            <p className="text-sm text-gray-600 mt-1"><strong>所要時間:</strong> {action.duration} 分</p>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-gray-500">登録されているアクションはありません。</p>
+            )}
+        </div>
+
       </main>
     </div>
-  )
+  );
 }

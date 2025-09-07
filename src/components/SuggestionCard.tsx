@@ -5,8 +5,9 @@ type SuggestionCardProps = {
   isPossible: boolean; // 間に合うかどうか 
 };
 
-// これがコンポーネントの本体､上記のデータ(props)を受け取って、表示を組み立てる
+//､上記のデータ(props)を受け取って、表示を組み立てる
 export default function SuggestionCard({ title, taskTime, travelTime, isPossible }: SuggestionCardProps) {// コンポーネントの引数として、SuggestionCardProps型を受け取る
+  console.log({ title, taskTime, travelTime, isPossible });
   const totalTime = taskTime + travelTime;// 合計時間を計算
 
   // isPossible の値 (true/false) によって、カードの見た目を変える
