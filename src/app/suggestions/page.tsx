@@ -58,46 +58,51 @@ function SuggestionsContent() {
     return <p className="text-center mt-10 text-red-500">無効な座標です。</p>;
   }
 
-   return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-88px)]"> {/* ヘッダー分の高さを引く */}
-            {/* 左側: 地図エリア */}
-            <div className="md:w-1/2 h-1/2 md:h-full p-4">
-                <SuggestionsMap 
-                    suggestion={suggestions}
-                    currentLocation={currentLocation}
-                    highlightId={highlightedId}
-                />
-            </div>
+  return (
+    <div className="flex flex-col md:flex-row h-full">
+      {/* 左側: 地図エリア */}
+      <div className="md:w-1/2 p-4 flex-1">
+        <SuggestionsMap
+          suggestions={suggestions}
+          currentLocation={currentLocation}
+          highlightedId={highlightedId}
+        />
+      </div>
 
-            {/* 右側: リストエリア */}
-            <div className="md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 space-y-4">
-                <h1 className="text-2xl font-bold text-gray-800">
-                    スキマ時間 ({searchParams.get('time')}分) の提案
-                </h1>
-                {suggestions.length > 0 ? (
-                    suggestions.map((suggestion) => (
-                        <SuggestionCard
-                            key={suggestion.id}
-                            title={suggestion.title}
-                            taskTime={suggestion.duration}
-                            travelTime={suggestion.travelTime}
-                            isPossible={suggestion.isPossible}
-                            onMouseEnter={() => setHighlightedId(suggestion.id)}
-                            onMouseLeave={() => setHighlightedId(null)}
-                        />
-                    ))
-                ) : (
-                    <p className="text-gray-500">条件に合うアクションは見つかりませんでした。</p>
-                )}
-            </div>
-        </div>
-    );
+      {/* 右側: リストエリア */}
+      <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto flex-1">
+        <h1 className="text-2xl font-bold text-gray-800">
+          スキマ時間 ({searchParams.get("time")}分) の提案
+        </h1>
+        {suggestions.length > 0 ? (
+          suggestions.map((suggestion) => (
+            <SuggestionCard
+              key={suggestion.id}
+              title={suggestion.title}
+              taskTime={suggestion.duration}
+              travelTime={suggestion.travelTime}
+              isPossible={suggestion.isPossible}
+              onMouseEnter={() => setHighlightedId(suggestion.id)}
+              onMouseLeave={() => setHighlightedId(null)}
+            />
+          ))
+        ) : (
+          <p className="text-gray-500">
+            条件に合うアクションは見つかりませんでした。
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function SuggestionsPage() {
-    return (
-        <Suspense fallback={<p className="text-center mt-10">読み込み中...</p>}>
-            <SuggestionsContent />
-        </Suspense>
-    );
+  return (
+    <div className="h-[calc(100vh-88px)]">
+      <Suspense fallback={<p className="text-center mt-10">読み込み中...</p>}>
+        <SuggestionsContent />
+      </Suspense>
+    </div>
+  );
 }
+
