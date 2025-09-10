@@ -17,7 +17,7 @@ export default function ActionMap({ lat, lng }: ActionMapProps) {
   return (
     <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
       <div style={{ height: "250px", width: "100%", marginTop: "1rem" }}>
-        <Map zoom={15} center={position} mapId={"sukimable-map"}>
+        <Map zoom={15} center={position} mapId={"sukima-piece-map"}>
           <AdvancedMarker position={position} />
         </Map>
       </div>

@@ -29,7 +29,7 @@ export default function SuggestionsMap({
       <Map
         defaultZoom={13}
         defaultCenter={currentLocation}
-        mapId={"sukimable-interactive-map"}
+        mapId={"sukima-piece-interactive-map"}
         className="w-full h-96 rounded-lg"
       >
         {/* 現在地のマーカー */}

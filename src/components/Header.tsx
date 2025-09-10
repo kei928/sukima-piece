@@ -12,7 +12,7 @@ export default function Header() {
           href="/"
           className="text-2xl font-bold text-gray-800 hover:text-indigo-600"
         >
-          Sukimable
+          Sukima Piece 
         </Link>
         {/* ログインボタンなどここにかくよ*/}
         <div className="flex items-center gap-4">
