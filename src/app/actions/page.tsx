@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { PostAction } from "../api/actions/route";
 import { Action } from "@prisma/client";
+import EditActionDialog from "@/components/EditActionDialog";
 
 export default function ActionsPage() {
   const [actionName, setActionName] = useState("");
@@ -13,6 +14,9 @@ export default function ActionsPage() {
 
   const [actions, setActions] = useState<Action[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAction, setEditingAction] = useState<Action | null>(null);
 
   const fetchActions = async () => {
     try {
@@ -62,6 +66,11 @@ export default function ActionsPage() {
       console.error("アクションの削除に失敗しました", error);
       alert("削除に失敗しました。");
     }
+  };
+
+  const handleEdit = (action: Action) => {
+    setEditingAction(action);
+    setIsDialogOpen(true);
   };
 
   return (
@@ -160,36 +169,65 @@ export default function ActionsPage() {
 
         {/* アクション一覧 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">マイアクション一覧</h2>
-            {isLoading ? (
-                <p>読み込み中...</p>
-            ) : actions.length > 0 ? (
-                <ul className="space-y-4">
-                    {actions.map((action) => (
-                        <li key={action.id} className="p-4 border rounded-lg bg-gray-50 flex justify-between items-start">
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-800">{action.title}</h3>
-                                <p className="text-sm text-gray-600 mt-1">{action.description}</p>
-                                <p className="text-sm text-gray-600 mt-1"><strong>場所:</strong> {action.address || '指定なし'}</p>
-                                <p className="text-sm text-gray-600 mt-1"><strong>所要時間:</strong> {action.duration} 分</p>
-                            </div>
-                            {/* ★★★ 削除ボタンを追加 ★★★ */}
-                            <button
-                                onClick={() => handleDelete(action.id)}
-                                className="text-red-500 hover:text-red-700 font-semibold text-sm"
-                            >
-                                削除
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            マイアクション一覧
+          </h2>
+          {isLoading ? (
+            <p>読み込み中...</p>
+          ) : actions.length > 0 ? (
+            <ul className="space-y-4">
+              {actions.map((action) => (
+                <li
+                  key={action.id}
+                  className="p-4 border rounded-lg bg-gray-50 flex justify-between items-start"
+                >
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {action.description}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      <strong>場所:</strong> {action.address || "指定なし"}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      <strong>所要時間:</strong> {action.duration} 分
+                    </p>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <button
+                      onClick={() => handleEdit(action)}
+                      className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
+                    >
+                      編集
+                    </button>
+                    <button
+                      onClick={() => handleDelete(action.id)}
+                      className="text-red-500 hover:text-red-700 font-semibold text-sm"
+                    >
+                      削除
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
             <p className="text-gray-500">
               登録されているアクションはありません。
             </p>
           )}
         </div>
       </main>
+       {/* ★★★ 編集ダイアログコンポーネントを配置 ★★★ */}
+      <EditActionDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        action={editingAction}
+        onActionUpdated={() => {
+          fetchActions(); // 更新が成功したらリストを再取得
+        }}
+      />
     </div>
   );
 }
