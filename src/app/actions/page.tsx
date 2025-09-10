@@ -5,7 +5,7 @@ import axios from "axios";
 import { PostAction } from "../api/actions/route";
 import { Action } from "@prisma/client";
 
-export default function Home() {
+export default function ActionsPage() {
   const [actionName, setActionName] = useState("");
   const [requiredTime, setRequiredTime] = useState("");
   const [description, setDescription] = useState("");
@@ -21,7 +21,6 @@ export default function Home() {
       setActions(response.data);
     } catch (error) {
       console.error("アクションの取得に失敗しました", error);
-      // ここでエラーメッセージをUIに表示するなどの処理を追加しても良い
     } finally {
       setIsLoading(false);
     }
@@ -51,16 +50,35 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (actionId: string) => {
+    if (!confirm("本当に削除しますか？")) {
+      return;
+    }
+    try {
+      await axios.delete(`/api/actions/${actionId}`);
+      // 成功したら、画面からそのアクションを即座に削除して再描画
+      setActions(actions.filter((action) => action.id !== actionId));
+    } catch (error) {
+      console.error("アクションの削除に失敗しました", error);
+      alert("削除に失敗しました。");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/*アクション追加フォーム*/}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">マイアクション追加</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-8">
+            マイアクション追加
+          </h1>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* アクション名 */}
             <div>
-              <label htmlFor="actionName" className="block text-sm font-medium text-gray-900 mb-2">
+              <label
+                htmlFor="actionName"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
                 アクション名
               </label>
               <input
@@ -76,22 +94,28 @@ export default function Home() {
 
             {/* 説明 */}
             <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
-                    説明（任意）
-                </label>
-                <textarea
-                    id="description"
-                    rows={3}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="例: 駅前のスターバックスで"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
-                ></textarea>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
+                説明（任意）
+              </label>
+              <textarea
+                id="description"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="例: 駅前のスターバックスで"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+              ></textarea>
             </div>
-            
+
             {/* 住所 */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-900 mb-2">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
                 場所・住所（任意）
               </label>
               <input
@@ -106,7 +130,10 @@ export default function Home() {
 
             {/* 所要時間 */}
             <div>
-              <label htmlFor="requiredTime" className="block text-sm font-medium text-gray-900 mb-2">
+              <label
+                htmlFor="requiredTime"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
                 所要時間（分）
               </label>
               <input
@@ -139,19 +166,29 @@ export default function Home() {
             ) : actions.length > 0 ? (
                 <ul className="space-y-4">
                     {actions.map((action) => (
-                        <li key={action.id} className="p-4 border rounded-lg bg-gray-50">
-                            <h3 className="font-bold text-lg text-gray-800">{action.title}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{action.description}</p>
-                            <p className="text-sm text-gray-600 mt-1"><strong>場所:</strong> {action.address || '指定なし'}</p>
-                            <p className="text-sm text-gray-600 mt-1"><strong>所要時間:</strong> {action.duration} 分</p>
+                        <li key={action.id} className="p-4 border rounded-lg bg-gray-50 flex justify-between items-start">
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-800">{action.title}</h3>
+                                <p className="text-sm text-gray-600 mt-1">{action.description}</p>
+                                <p className="text-sm text-gray-600 mt-1"><strong>場所:</strong> {action.address || '指定なし'}</p>
+                                <p className="text-sm text-gray-600 mt-1"><strong>所要時間:</strong> {action.duration} 分</p>
+                            </div>
+                            {/* ★★★ 削除ボタンを追加 ★★★ */}
+                            <button
+                                onClick={() => handleDelete(action.id)}
+                                className="text-red-500 hover:text-red-700 font-semibold text-sm"
+                            >
+                                削除
+                            </button>
                         </li>
                     ))}
                 </ul>
             ) : (
-                <p className="text-gray-500">登録されているアクションはありません。</p>
-            )}
+            <p className="text-gray-500">
+              登録されているアクションはありません。
+            </p>
+          )}
         </div>
-
       </main>
     </div>
   );
