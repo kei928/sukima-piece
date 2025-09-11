@@ -23,6 +23,9 @@ function SuggestionsContent() {
   useEffect(() => {
     const fetchSuggestions = async () => {
       const time = searchParams.get("time");
+      const mode = searchParams.get("mode");
+      const category = searchParams.get("category");
+
       if (!time || !currentLocation.lat || !currentLocation.lng) {
         setError("検索条件が不足しています。");
         setIsLoading(false);
@@ -30,12 +33,38 @@ function SuggestionsContent() {
       }
 
       try {
-        const response = await axios.post<Suggestion[]>("/api/suggestions", {
-          availableTime: Number(time),
-          latitude: currentLocation.lat,
-          longitude: currentLocation.lng,
-        });
-        setSuggestions(response.data);
+        let apiUrl = "";
+        let requestBody = {};
+
+        // ★modeに応じてAPIのURLとリクエストボディを切り替える
+        if (mode === "nearby") {
+          apiUrl = "/api/nearby-suggestions";
+          requestBody = {
+            availableTime: Number(time),
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+            category: category || "cafe", // カテゴリがなければデフォルトでcafe
+          };
+        } else {
+          // デフォルトは 'myActions'
+          apiUrl = "/api/suggestions";
+          requestBody = {
+            availableTime: Number(time),
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+          };
+        }
+
+        const response = await axios.post<Suggestion[]>(apiUrl, requestBody);
+
+        //place_idをidとして利用するための変換
+        const formattedSuggestions = response.data.map((s) => ({
+          ...s,
+          // @ts-ignore
+          id: s.id || s.name, // name は place_id が入っている想定
+        }));
+
+        setSuggestions(formattedSuggestions);
       } catch (err) {
         setError("提案の取得中にエラーが発生しました。");
       } finally {
@@ -105,4 +134,3 @@ export default function SuggestionsPage() {
     </div>
   );
 }
-

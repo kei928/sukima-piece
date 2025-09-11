@@ -9,6 +9,8 @@ type Location = {
   longitude: number;
 };
 
+type SearchMode = "myActions" | "nearby";
+
 export default function Home() {
   const [availableTime, setAvailableTime] = useState(""); // スキマ時間な時間を管理するための状態変数
   const [location, setLocation] = useState<Location | null>(null); // 緯度経度を保存するstate
@@ -16,6 +18,9 @@ export default function Home() {
 
   const [error, setError] = useState<string | null>(null);
   const router = useRouter(); // useRouterフックを使用
+
+  const [searchMode, setSearchMode] = useState<SearchMode>("myActions");
+  const [category, setCategory] = useState("cafe"); //カテゴリの初期値
 
   //探すボタンが押されたときに呼ばれる関数
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
@@ -36,7 +41,12 @@ export default function Home() {
       time: availableTime,
       lat: location.latitude.toString(),
       lng: location.longitude.toString(),
+      mode: searchMode,
     });
+
+    if (searchMode === "nearby") {
+      params.append("category", category);
+    }
 
     // /suggestionsページにパラメータを付けて遷移
     router.push(`/suggestions?${params.toString()}`);
@@ -115,6 +125,59 @@ export default function Home() {
                 分
               </span>
             </div>
+
+            {/* Step 3: 検索モードの選択 */}
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                Step 3: 何を探す？
+              </h2>
+              <div className="flex justify-center gap-4 mb-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="searchMode"
+                    value="myActions"
+                    checked={searchMode === "myActions"}
+                    onChange={() => setSearchMode("myActions")}
+                    className="form-radio"
+                  />
+                  マイアクション
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="searchMode"
+                    value="nearby"
+                    checked={searchMode === "nearby"}
+                    onChange={() => setSearchMode("nearby")}
+                    className="form-radio"
+                  />
+                  周辺のスポット
+                </label>
+              </div>
+
+              {/* 「周辺のスポット」が選択された時だけカテゴリ選択を表示 */}
+              {searchMode === "nearby" && (
+                <div>
+                  <label htmlFor="category" className="sr-only">
+                    カテゴリ
+                  </label>
+                  <select
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="cafe">カフェ</option>
+                    <option value="restaurant">レストラン</option>
+                    <option value="park">公園</option>
+                    <option value="book_store">本屋</option>
+                    <option value="movie_theater">映画館</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <button
               type="submit"
