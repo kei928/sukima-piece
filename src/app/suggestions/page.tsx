@@ -28,9 +28,9 @@ function SuggestionsContent() {
     const fetchSuggestions = async () => {
       const time = searchParams.get("time");
       const mode = searchParams.get("mode");
-      const category = searchParams.get("category");
+      const theme = searchParams.get("theme");
 
-      if (!time || !currentLocation.lat || !currentLocation.lng) {
+      if (!time || !currentLocation.lat || !currentLocation.lng|| !mode) {
         setError("検索条件が不足しています。");
         setIsLoading(false);
         return;
@@ -47,7 +47,7 @@ function SuggestionsContent() {
             availableTime: Number(time),
             latitude: currentLocation.lat,
             longitude: currentLocation.lng,
-            category: category || "cafe", // カテゴリがなければデフォルトでcafe
+            theme:theme||'relax', // デフォルトは'relax'
           };
         } else {
           // デフォルトは 'myActions'

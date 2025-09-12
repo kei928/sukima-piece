@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { authOptions } from "../auth/[...nextauth]/route"; 
-import { getServerSession } from "next-auth"; 
+import { authOptions } from "../auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
 import { prisma } from "@/libs/prismaClient";
 
 //フロントエンドから受け取るデータの型
 type NearbyRequest = {
     latitude: number;
     longitude: number;
-    category: string; // カテゴリフィルター
+    theme: string; // カテゴリフィルター
     availableTime: number;
 }
+
+//テーマに基づいて使用するカテゴリを定義
+const themeToCategories: { [key: string]: string[] } = {
+    relax: ['cafe', 'park', 'book_store'],
+    eat: ['restaurant', 'cafe'],
+    fun: ['amusement_park', 'movie_theater',],
+    anything: ['cafe', 'park', 'museum', 'restaurant', 'amusement_park', 'movie_theater', 'book_store', 'shopping_mall'],
+};
 
 //Google Places APIのレスポンスの型
 type Place = {
@@ -42,6 +50,24 @@ type DistanceMatrixResponse = {
     }[];
 };
 
+//特定のカテゴリで近くの場所を検索
+const searchPlacesByCategory = (category: string, latitude: number, longitude: number, apiKey: string) => {
+    const url = "https://places.googleapis.com/v1/places:searchNearby";
+    const requestBody = {
+        includedTypes: [category],
+        maxResultCount: 5, // 1カテゴリあたりの取得件数を調整
+        locationRestriction: { circle: { center: { latitude, longitude }, radius: 1500.0 } },
+        languageCode: "ja",
+    };
+    return axios.post<{ places: Place[] }>(url, requestBody, {
+        headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.regularOpeningHours,places.rating",
+        },
+    });
+};
+
 export const POST = async (req: NextRequest) => {
     try {
         const session = await getServerSession(authOptions);
@@ -49,61 +75,36 @@ export const POST = async (req: NextRequest) => {
             return NextResponse.json({ message: "認証されていません" }, { status: 401 });
         }
 
-        const { latitude, longitude, category, availableTime }: NearbyRequest = await req.json();
+        const { latitude, longitude, theme, availableTime }: NearbyRequest = await req.json();
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
         if (!apiKey) throw new Error("APIキーが設定されていません");
 
-        const userDurationSetting = await prisma.categoryDuration.findUnique({
-            where: {
-                userId_category: {
-                    userId: session.user.id,
-                    category: category,
-                },
-            },
-        });
+        const categoriesToSearch = themeToCategories[theme] || themeToCategories.anything;
 
-         // 設定がなければ30分、あればその値を使う
-        const stayDuration = userDurationSetting ? userDurationSetting.duration : 30;
-
-        //Google Places APIで周辺のスポットを検索
-        const placesUrl = "https://places.googleapis.com/v1/places:searchNearby";
-
-        const requestBody = {
-            includedTypes: [category],
-            maxResultCount: 10, // 取得する件数 (最大20)
-            locationRestriction: {
-                circle: {
-                    center: {
-                        latitude: latitude,
-                        longitude: longitude,
-                    },
-                    radius: 1500.0, // 検索範囲 (メートル)
-                },
-            },
-            languageCode: "ja",
-        };
-
-        const placesResponse = await axios.post<{ places: Place[] }>(
-            placesUrl,
-            requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Goog-Api-Key": apiKey,
-                    // 必要な情報だけを取得するためのフィールドマスク
-                    "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.regularOpeningHours,places.rating",
-                },
-            }
+        //選択されたテーマに基づいて複数のカテゴリで場所を検索
+        const placesPromises = categoriesToSearch.map(category =>
+            searchPlacesByCategory(category, latitude, longitude, apiKey)
         );
 
-        const openPlaces = (placesResponse.data.places || []).filter(
-            place => place.regularOpeningHours?.openNow
-        );
+        const responses = await Promise.all(placesPromises);
+
+        //重複を排除し、すべての場所を一つの配列にまとめる
+        const allPlaces = responses.flatMap(res => res.data.places || []);
+        const uniquePlaces = Array.from(new Map(allPlaces.map(place => [place.id, place])).values());// place.idで重複排除
+
+        const openPlaces = uniquePlaces.filter(place => place.regularOpeningHours?.openNow);
 
         if (openPlaces.length === 0) {
             return NextResponse.json([], { status: 200 });
         }
+
+         // データベースからユーザーの滞在時間設定を取得
+        const durationSettings = await prisma.categoryDuration.findMany({
+            where: { userId: session.user.id },
+        });
+        const durationMap = new Map(durationSettings.map(d => [d.category, d.duration]));
+
 
         // 各場所までの移動時間を計算
         const origin = `${latitude},${longitude}`;
@@ -118,10 +119,14 @@ export const POST = async (req: NextRequest) => {
             const element = elements[index];
             if (element.status !== 'OK' || !element.duration) return null;
 
+
+            // カテゴリに合った滞在時間を取得 (設定がなければ30分)
+            const categoryKey = categoriesToSearch.find(cat => (place as any).types?.includes(cat)) || categoriesToSearch[0];
+            const stayDuration = durationMap.get(categoryKey) || 30;
+
             const travelTimeInSeconds = element.duration.value;
             const roundtripTravelTime = Math.ceil((travelTimeInSeconds * 2) / 60);
-
-            const stayDuration = category === 'cafe' ? 60 : 30;
+            
             const totalTime = stayDuration + roundtripTravelTime;
 
             if (totalTime <= availableTime) {

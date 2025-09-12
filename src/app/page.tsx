@@ -9,6 +9,14 @@ type Location = {
   longitude: number;
 };
 
+const themes = [
+  { key: "relax", name: "リラックスしたい" },
+  { key: "eat", name: "なにか食べたい" },
+  { key: "walk", name: "散歩したい" },
+  { key: "fun", name: "遊びたい" },
+  { key: "anything", name: "おまかせ" },
+];
+
 type SearchMode = "myActions" | "nearby";
 
 export default function Home() {
@@ -20,7 +28,7 @@ export default function Home() {
   const router = useRouter(); // useRouterフックを使用
 
   const [searchMode, setSearchMode] = useState<SearchMode>("myActions");
-  const [category, setCategory] = useState("cafe"); //カテゴリの初期値
+  const [theme, setTheme] = useState("relax"); //カテゴリの初期値
 
   //探すボタンが押されたときに呼ばれる関数
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
@@ -45,7 +53,7 @@ export default function Home() {
     });
 
     if (searchMode === "nearby") {
-      params.append("category", category);
+      params.append("theme", theme);
     }
 
     // /suggestionsページにパラメータを付けて遷移
@@ -156,24 +164,27 @@ export default function Home() {
                 </label>
               </div>
 
-              {/* 「周辺のスポット」が選択された時だけカテゴリ選択を表示 */}
+              {/* 「周辺のスポット」が選択された時だけテーマ選択を表示 */}
               {searchMode === "nearby" && (
                 <div>
-                  <label htmlFor="category" className="sr-only">
-                    カテゴリ
-                  </label>
-                  <select
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="cafe">カフェ</option>
-                    <option value="restaurant">レストラン</option>
-                    <option value="park">公園</option>
-                    <option value="book_store">本屋</option>
-                    <option value="movie_theater">映画館</option>
-                  </select>
+                  <h3 className="text-md font-semibold text-gray-700 mb-3">どんな気分？</h3>
+                  {/* テーマ選択ボタン */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {themes.map(({ key, name }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setTheme(key)}
+                          className={`p-3 rounded-lg text-sm font-semibold transition-colors ${
+                            theme === key 
+                              ? 'bg-blue-600 text-white shadow' 
+                              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                          }`}
+                        >
+                          {name}
+                        </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
