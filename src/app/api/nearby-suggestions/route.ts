@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { authOptions } from "../auth/[...nextauth]/route"; 
+import { getServerSession } from "next-auth"; 
+import { prisma } from "@/libs/prismaClient";
 
 //フロントエンドから受け取るデータの型
 type NearbyRequest = {
@@ -41,10 +44,27 @@ type DistanceMatrixResponse = {
 
 export const POST = async (req: NextRequest) => {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ message: "認証されていません" }, { status: 401 });
+        }
+
         const { latitude, longitude, category, availableTime }: NearbyRequest = await req.json();
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
         if (!apiKey) throw new Error("APIキーが設定されていません");
+
+        const userDurationSetting = await prisma.categoryDuration.findUnique({
+            where: {
+                userId_category: {
+                    userId: session.user.id,
+                    category: category,
+                },
+            },
+        });
+
+         // 設定がなければ30分、あればその値を使う
+        const stayDuration = userDurationSetting ? userDurationSetting.duration : 30;
 
         //Google Places APIで周辺のスポットを検索
         const placesUrl = "https://places.googleapis.com/v1/places:searchNearby";

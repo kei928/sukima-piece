@@ -11,18 +11,18 @@ datasource db {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -38,16 +38,16 @@ model Session {
 }
 
 model User {
-  id            String    @id 
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  actions Action[] 
+  id                String             @id
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  actions           Action[]
+  categoryDurations CategoryDuration[]
 }
-
 
 model VerificationToken {
   identifier String
@@ -57,22 +57,31 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Action{
-  id String @id @default(cuid())
-  title String
+model CategoryDuration {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category String // カテゴリ名
+  duration Int // 滞在時間（分）
+
+  @@unique([userId, category])
+}
+
+model Action {
+  id          String       @id @default(cuid())
+  title       String
   description String?
-  address String?
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  duration Int
-  status ActionStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  address     String?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  duration    Int
+  status      ActionStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 enum ActionStatus {
-  PENDING      // 未着手
-  IN_PROGRESS  // 進行中
-  COMPLETED    // 完了
+  PENDING // 未着手
+  IN_PROGRESS // 進行中
+  COMPLETED // 完了
 }
-

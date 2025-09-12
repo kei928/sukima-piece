@@ -12,13 +12,20 @@ export default function Header() {
           href="/"
           className="text-2xl font-bold text-gray-800 hover:text-indigo-600"
         >
-          Sukima Piece 
+          Sukima Piece
         </Link>
         {/* ログインボタンなどここにかくよ*/}
         <div className="flex items-center gap-4">
           <Link href="/actions" className="text-gray-600 hover:text-indigo-600">
             マイアクション追加
           </Link>
+          <Link
+            href="/settings/durations"
+            className="text-gray-600 hover:text-indigo-600"
+          >
+            滞在時間設定
+          </Link>
+
           <img
             src={session?.user?.image || "/guest.png"}
             alt="User Avatar"
@@ -26,7 +33,12 @@ export default function Header() {
             height={30}
             className="rounded-full ml-4"
           />
-          <button onClick={() => signOut()} className="text-gray-600 hover:text-indigo-600">logout</button>
+          <button
+            onClick={() => signOut()}
+            className="text-gray-600 hover:text-indigo-600"
+          >
+            logout
+          </button>
         </div>
       </div>
     </header>
