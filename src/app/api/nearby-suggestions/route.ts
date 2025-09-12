@@ -11,7 +11,6 @@ type NearbyRequest = {
 
 //Google Places APIのレスポンスの型
 type Place = {
-    name: string; // place_id
     id: string; // place_id
     displayName?: {
         text: string;
@@ -22,6 +21,10 @@ type Place = {
         latitude: number;
         longitude: number;
     };
+    regularOpeningHours?: {
+        openNow: boolean;
+    };
+    rating?: number;
 };
 
 
@@ -69,26 +72,29 @@ export const POST = async (req: NextRequest) => {
                     "Content-Type": "application/json",
                     "X-Goog-Api-Key": apiKey,
                     // 必要な情報だけを取得するためのフィールドマスク
-                    "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location",
+                    "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.regularOpeningHours,places.rating",
                 },
             }
         );
 
-        const nearbyPlaces = placesResponse.data.places || [];
-        if (nearbyPlaces.length === 0) {
+        const openPlaces = (placesResponse.data.places || []).filter(
+            place => place.regularOpeningHours?.openNow
+        );
+
+        if (openPlaces.length === 0) {
             return NextResponse.json([], { status: 200 });
         }
 
         // 各場所までの移動時間を計算
         const origin = `${latitude},${longitude}`;
-        const destinations = nearbyPlaces.map(place => `place_id:${place.id}`).join('|');
+        const destinations = openPlaces.map(place => `place_id:${place.id}`).join('|');
         const matrixUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destinations}&key=${apiKey}&language=ja&mode=walking`;
 
         const matrixResponse = await axios.get<DistanceMatrixResponse>(matrixUrl);
         const elements = matrixResponse.data.rows[0].elements;
 
         //利用可能な時間内に行ける場所をフィルタリング
-        const suggestions = nearbyPlaces.map((place, index) => {
+        const suggestions = openPlaces.map((place, index) => {
             const element = elements[index];
             if (element.status !== 'OK' || !element.duration) return null;
 
@@ -109,6 +115,7 @@ export const POST = async (req: NextRequest) => {
                     travelTime: roundtripTravelTime,
                     totalTime: totalTime,
                     isPossible: true,
+                    rating: place.rating,
                 };
             }
             return null;

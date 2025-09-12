@@ -4,8 +4,12 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import SuggestionCard from "@/components/SuggestionCard";
-import { Suggestion } from "../api/suggestions/route";
+import { Suggestion as ApiSuggestion } from "../api/suggestions/route";
 import SuggestionsMap from "@/components/SuggestionsMap";
+
+export type Suggestion = ApiSuggestion & {//
+  rating?: number;
+};
 
 // useSearchParamsをラップするコンポーネント
 function SuggestionsContent() {
@@ -36,7 +40,7 @@ function SuggestionsContent() {
         let apiUrl = "";
         let requestBody = {};
 
-        // ★modeに応じてAPIのURLとリクエストボディを切り替える
+        // modeに応じてAPIのURLとリクエストボディを切り替える
         if (mode === "nearby") {
           apiUrl = "/api/nearby-suggestions";
           requestBody = {
@@ -111,6 +115,7 @@ function SuggestionsContent() {
               taskTime={suggestion.duration}
               travelTime={suggestion.travelTime}
               isPossible={suggestion.isPossible}
+              rating={suggestion.rating} 
               onMouseEnter={() => setHighlightedId(suggestion.id)}
               onMouseLeave={() => setHighlightedId(null)}
             />
