@@ -4,6 +4,45 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { PostAction } from "../route";
 
+
+export const GET = async (
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) => {
+  try {
+    const session = await getServerSession(authOptions);
+    const actionId = params.id;
+
+    if (!session || !session.user?.id) {
+      return NextResponse.json(
+        { message: "認証されていません" },
+        { status: 401 }
+      );
+    }
+    // 指定されたIDのアクションを取得し、ユーザーIDも一致するか確認
+    const action = await prisma.action.findFirst({
+      where: {
+        id: actionId,
+        userId: session.user.id
+      },
+    });
+
+    if (!action) {
+      return NextResponse.json(
+        { message: "アクションが見つかりません" },
+        { status: 404 });
+    }
+
+    return NextResponse.json(action, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "アクションの取得に失敗しました" },
+      { status: 500 }
+    );
+  }
+};
+
 export const PATCH = async (
   req: NextRequest,
   { params }: { params: { id: string } }

@@ -6,8 +6,9 @@ import axios from "axios";
 import SuggestionCard from "@/components/SuggestionCard";
 import { Suggestion as ApiSuggestion } from "../api/suggestions/route";
 import SuggestionsMap from "@/components/SuggestionsMap";
+import Link from "next/link";
 
-export type Suggestion = ApiSuggestion & {//
+export type Suggestion = ApiSuggestion & {
   rating?: number;
 };
 
@@ -18,6 +19,7 @@ function SuggestionsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null); // ハイライト用State
+  const mode = searchParams.get("mode") ;
 
   const currentLocation = {
     lat: Number(searchParams.get("lat")),
@@ -30,7 +32,7 @@ function SuggestionsContent() {
       const mode = searchParams.get("mode");
       const theme = searchParams.get("theme");
 
-      if (!time || !currentLocation.lat || !currentLocation.lng|| !mode) {
+      if (!time || !currentLocation.lat || !currentLocation.lng || !mode) {
         setError("検索条件が不足しています。");
         setIsLoading(false);
         return;
@@ -47,7 +49,7 @@ function SuggestionsContent() {
             availableTime: Number(time),
             latitude: currentLocation.lat,
             longitude: currentLocation.lng,
-            theme:theme||'relax', // デフォルトは'relax'
+            theme: theme || "relax", // デフォルトは'relax'
           };
         } else {
           // デフォルトは 'myActions'
@@ -109,16 +111,20 @@ function SuggestionsContent() {
         </h1>
         {suggestions.length > 0 ? (
           suggestions.map((suggestion) => (
-            <SuggestionCard
+            <Link
+              href={`/suggestions/${suggestion.id}?mode=${mode}`}
               key={suggestion.id}
-              title={suggestion.title}
-              taskTime={suggestion.duration}
-              travelTime={suggestion.travelTime}
-              isPossible={suggestion.isPossible}
-              rating={suggestion.rating} 
-              onMouseEnter={() => setHighlightedId(suggestion.id)}
-              onMouseLeave={() => setHighlightedId(null)}
-            />
+            >
+              <SuggestionCard
+                title={suggestion.title}
+                taskTime={suggestion.duration}
+                travelTime={suggestion.travelTime}
+                isPossible={suggestion.isPossible}
+                rating={suggestion.rating}
+                onMouseEnter={() => setHighlightedId(suggestion.id)}
+                onMouseLeave={() => setHighlightedId(null)}
+              />
+            </Link>
           ))
         ) : (
           <p className="text-gray-500">

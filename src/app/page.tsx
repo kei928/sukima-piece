@@ -83,6 +83,7 @@ export default function Home() {
         setError(
           "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
         );
+        console.log(err);
         setLocationLoading(false);
       }
     );
@@ -149,7 +150,7 @@ export default function Home() {
                     onChange={() => setSearchMode("myActions")}
                     className="form-radio"
                   />
-                  マイアクション
+                  マイピース
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -194,7 +195,7 @@ export default function Home() {
               type="submit"
               className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              間に合うことを探す
+              ピースを探す
             </button>
           </form>
         </div>
