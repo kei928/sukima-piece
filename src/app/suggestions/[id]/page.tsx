@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ActionMap from "@/components/ActionMap";
+import Image from "next/image";
 
 // 場所の詳細情報の型
 type PlaceDetails = {
@@ -27,6 +28,29 @@ type ActionDetails = {
   duration: number;
   lat?: number; // 緯度経度は別途取得する必要がある
   lng?: number;
+};
+
+const StarRating = ({ rating }: { rating: number }) => {
+  if (!rating) return null;
+  const fullStars = Math.floor(rating);
+  const halfStar = rating - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+  return (
+    <div className="flex items-center">
+      {[...Array(fullStars)].map((_, i) => (
+        <span key={`full_${i}`} className="text-yellow-400">
+          ★
+        </span>
+      ))}
+      {halfStar && <span className="text-yellow-400">★</span>}
+      {[...Array(emptyStars)].map((_, i) => (
+        <span key={`empty_${i}`} className="text-gray-300">
+          ★
+        </span>
+      ))}
+      <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</span>
+    </div>
+  );
 };
 
 export default function SuggestionDetailPage() {
@@ -96,10 +120,30 @@ export default function SuggestionDetailPage() {
           longitude: (details as ActionDetails).lng,
         };
 
+  const photo =
+    mode === "nearby" ? (details as PlaceDetails).photos?.[0] : null;
+  const photoUrl = photo
+    ? `https://places.googleapis.com/v1/${photo.name}/media?maxHeightPx=400&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+    : null;
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* TODO: Google Places APIから写真を取得して表示する */}
+        {photoUrl ? (
+          <div className="relative w-full h-64">
+            <Image
+              src={photoUrl}
+              alt={(details as PlaceDetails).displayName?.text || "場所の写真"}
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+          </div>
+        ) : (
+          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+            <p className="text-gray-500">写真はありません</p>
+          </div>
+        )}
 
         <div className="p-6">
           <h1 className="text-3xl font-bold mb-2">
@@ -112,6 +156,12 @@ export default function SuggestionDetailPage() {
               ? (details as PlaceDetails).formattedAddress
               : (details as ActionDetails).address}
           </p>
+
+          {mode === "nearby" && (details as PlaceDetails).rating && (
+            <div className="mb-4">
+              <StarRating rating={(details as PlaceDetails).rating!} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -127,11 +177,29 @@ export default function SuggestionDetailPage() {
                   <strong>所要時間:</strong> 約{" "}
                   {(details as { duration: number }).duration} 分
                 </p>
-                {mode === "nearby" && (details as PlaceDetails).rating && (
-                  <p>
-                    <strong>評価:</strong>{" "}
-                    {(details as PlaceDetails).rating?.toFixed(1)} ★
-                  </p>
+                {mode === "nearby" && (details as PlaceDetails).reviews && (
+                  <div className="mt-8 pt-6 border-t">
+                    <h2 className="text-2xl font-bold mb-4">レビュー</h2>
+                    <div className="space-y-6">
+                      {(details as PlaceDetails).reviews
+                        ?.slice(0, 3)
+                        .map((review, index) => (
+                          <div
+                            key={index}
+                            className="border-b pb-4 last:border-b-0"
+                          >
+                            <div className="flex items-center mb-2">
+                              <p className="font-semibold">
+                                {review.authorAttribution.displayName}
+                              </p>
+                            </div>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              {review.text.text}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
                 )}
                 {mode === "nearby" && (details as PlaceDetails).websiteUri && (
                   <p>
@@ -157,8 +225,6 @@ export default function SuggestionDetailPage() {
               )}
             </div>
           </div>
-
-          {/* TODO: Google Places APIからレビューを取得して表示する */}
         </div>
       </div>
     </div>
