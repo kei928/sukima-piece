@@ -10,6 +10,7 @@ declare module 'next-auth' {
             email?: string | null;
             image?: string | null;
             id?: string;
+
         };
         expires: ISODateString;
     }
@@ -18,8 +19,12 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
     interface JWT {
         id?: string;
+        role?: string;
+
     }
 }
+
+
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -30,10 +35,12 @@ export const authOptions: AuthOptions = {
     ],
     secret: process.env.NEXTAUTH_SECRET as string,
     callbacks: {
-        async jwt({ token, account, profile }) {
+        async jwt({ token, user, account, profile, isNewUser }) {
             if (account && profile) {
                 const userId = account.providerAccountId;
                 token.id = userId; // トークンにIDを追加
+                token.accessToken = account.access_token
+                token.refreshToken = account.refresh_token
 
                 await prisma.user.upsert({
                     where: { id: userId },

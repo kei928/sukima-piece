@@ -36,6 +36,7 @@ type Place = {
         openNow: boolean;
     };
     rating?: number;
+    types?: string[]; 
 };
 
 
@@ -121,7 +122,7 @@ export const POST = async (req: NextRequest) => {
 
 
             // カテゴリに合った滞在時間を取得 (設定がなければ30分)
-            const categoryKey = categoriesToSearch.find(cat => (place as any).types?.includes(cat)) || categoriesToSearch[0];
+            const categoryKey = categoriesToSearch.find(cat => place.types?.includes(cat)) || categoriesToSearch[0];
             const stayDuration = durationMap.get(categoryKey) || 30;
 
             const travelTimeInSeconds = element.duration.value;

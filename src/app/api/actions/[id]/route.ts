@@ -7,9 +7,10 @@ import { PostAction } from "../route";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) => {
   try {
+    const { params } = context; 
     const session = await getServerSession(authOptions);
     const actionId = params.id;
 
@@ -93,7 +94,7 @@ export const PATCH = async (
 };
 
 export const DELETE = async (
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
   try {

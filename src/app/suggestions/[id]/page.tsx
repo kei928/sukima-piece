@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ActionMap from "@/components/ActionMap";
 
-// 場所の詳細情報の型 (Google Places APIのレスポンスに合わせる)
+// 場所の詳細情報の型
 type PlaceDetails = {
   displayName?: { text: string };
   formattedAddress?: string;

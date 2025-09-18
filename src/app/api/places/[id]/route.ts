@@ -22,10 +22,10 @@ export async function GET(
                 'X-Goog-FieldMask': 'displayName,formattedAddress,location,rating,websiteUri,photos,reviews',
             },
         });
-        
+
         return NextResponse.json(response.data, { status: 200 });
     } catch (error) {
-        if(axios.isAxiosError(error)) {
+        if (axios.isAxiosError(error)) {
             console.error('Google Places APIのエラー:', error.response?.data || error.message);
         } else {
             console.error('予期せぬエラー:', error);

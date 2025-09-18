@@ -19,7 +19,7 @@ function SuggestionsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null); // ハイライト用State
-  const mode = searchParams.get("mode") ;
+  const mode = searchParams.get("mode");
 
   const currentLocation = {
     lat: Number(searchParams.get("lat")),
@@ -63,14 +63,8 @@ function SuggestionsContent() {
 
         const response = await axios.post<Suggestion[]>(apiUrl, requestBody);
 
-        //place_idをidとして利用するための変換
-        const formattedSuggestions = response.data.map((s) => ({
-          ...s,
-          // @ts-ignore
-          id: s.id || s.name, // name は place_id が入っている想定
-        }));
-
-        setSuggestions(formattedSuggestions);
+      setSuggestions(response.data);// APIからの提案データをセット
+      
       } catch (err) {
         setError("提案の取得中にエラーが発生しました。");
       } finally {
