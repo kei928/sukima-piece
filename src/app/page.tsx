@@ -192,22 +192,13 @@ export default function Home() {
                 disabled={isSearching} // 検索中はボタンを無効化
                 className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-teal-600 transition-colors duration-200 shadow-lg hover:shadow-xl disabled:bg-slate-400 disabled:cursor-wait"
               >
-                {/* パズルのアイコン */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
-                  />
-                </svg>
                 {isSearching ? "探しています..." : "ピースを探す"}
+                <Image
+                  src="/SP_logo.svg"
+                  alt="Sukima Piece Logo"
+                  width={24}
+                  height={24}
+                />
               </button>
             </div>
           </form>
