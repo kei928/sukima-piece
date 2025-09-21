@@ -1,202 +1,215 @@
-"use client"; //コンポーネントがサーバーコンポーネントではなく、クライアントコンポーネントであることを示す
+"use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // next/navigationからuseRouterをインポート
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type Location = {
-  // 緯度経度を保存するための型
   latitude: number;
   longitude: number;
 };
 
 const themes = [
-  { key: "relax", name: "リラックスしたい" },
-  { key: "eat", name: "なにか食べたい" },
-  { key: "walk", name: "散歩したい" },
-  { key: "fun", name: "遊びたい" },
+  { key: "relax", name: "リラックス" },
+  { key: "eat", name: "食事" },
+  { key: "fun", name: "お楽しみ" },
   { key: "anything", name: "おまかせ" },
 ];
 
 type SearchMode = "myActions" | "nearby";
 
 export default function Home() {
-  const [availableTime, setAvailableTime] = useState(""); // スキマ時間な時間を管理するための状態変数
-  const [location, setLocation] = useState<Location | null>(null); // 緯度経度を保存するstate
-  const [locationLoading, setLocationLoading] = useState(false); // 読み込み中かどうかを示すstate
-
+  const [availableTime, setAvailableTime] = useState("");
+  const [isSearching, setIsSearching] = useState(false); // 検索処理中の状態
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter(); // useRouterフックを使用
+  const router = useRouter();
 
   const [searchMode, setSearchMode] = useState<SearchMode>("myActions");
-  const [theme, setTheme] = useState("relax"); //カテゴリの初期値
+  const [theme, setTheme] = useState("relax");
 
-  //探すボタンが押されたときに呼ばれる関数
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // フォームのデフォルトの送信動作を防ぐ
+  // handleSearchをasync関数に変更
+  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError(null);
 
     if (!availableTime || Number(availableTime) <= 0) {
       setError("有効なスキマ時間を入力してください。");
       return;
     }
-    if (!location) {
-      setError("まず現在地を取得してください。");
-      return;
-    }
 
-    // URLクエリパラメータを作成
-    const params = new URLSearchParams({
-      time: availableTime,
-      lat: location.latitude.toString(),
-      lng: location.longitude.toString(),
-      mode: searchMode,
-    });
+    setIsSearching(true); // 検索開始
 
-    if (searchMode === "nearby") {
-      params.append("theme", theme);
-    }
-
-    // /suggestionsページにパラメータを付けて遷移
-    router.push(`/suggestions?${params.toString()}`);
-  };
-  const handleGetCurrentLocation = () => {
-    setLocationLoading(true);
-    setError(null);
-
-    if (!navigator.geolocation) {
-      setError(
-        "お使いのブラウザでは位置情報サービスがサポートされていません。"
-      );
-      setLocationLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setLocationLoading(false);
-      },
-      (err) => {
-        setError(
-          "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
+    // 現在地を取得するPromise
+    const getCurrentLocation = (): Promise<Location> => {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(
+            "お使いのブラウザでは位置情報サービスがサポートされていません。"
+          );
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (err) => {
+            console.log(err);
+            reject(
+              "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
+            );
+          }
         );
-        console.log(err);
-        setLocationLoading(false);
+      });
+    };
+
+    try {
+      // 位置情報を取得
+      const location = await getCurrentLocation();
+
+      // URLクエリパラメータを作成
+      const params = new URLSearchParams({
+        time: availableTime,
+        lat: location.latitude.toString(),
+        lng: location.longitude.toString(),
+        mode: searchMode,
+      });
+
+      if (searchMode === "nearby") {
+        params.append("theme", theme);
       }
-    );
+
+      // /suggestionsページにパラメータを付けて遷移
+      router.push(`/suggestions?${params.toString()}`);
+    } catch (err: any) {
+      setError(err);
+    } finally {
+      setIsSearching(false); // 検索終了
+    }
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50">
-      <div className="w-full max-w-md text-center">
-        <h1 className="text-4xl font-bold text-gray-800">Sukima Piece</h1>
-        <p className="mt-2 text-lg text-gray-600">
-          あなたの予定の隙間､埋めます
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-4">
+      <div className="w-full max-w-lg text-center">
+        {/* メインカラーを teal-500 に変更 */}
+        <h1 className="text-5xl font-extrabold text-teal-600">Sukima Piece</h1>
+        <p className="mt-3 text-lg text-slate-600">
+          あなたの日常に、新しいピースを。
         </p>
 
-        <div className="mt-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Step 1: 現在地を取得
-            </h2>
-            <button
-              onClick={handleGetCurrentLocation}
-              disabled={locationLoading}
-              className="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400"
-            >
-              {locationLoading ? "取得中…" : "現在地を取得する"}
-            </button>
-            {location && (
-              <div className="text-green-700 text-sm mt-2 p-2 bg-green-50 rounded-md">
-                <p>✓ 位置情報を取得しました</p>
+        <div className="mt-10 p-8 bg-white rounded-2xl shadow-lg border border-slate-200 text-left">
+          <form onSubmit={handleSearch} className="space-y-6">
+            {/* スキマ時間入力 */}
+            <div>
+              <label
+                htmlFor="time-input"
+                className="text-sm font-bold text-slate-700"
+              >
+                スキマ時間
+              </label>
+              <div className="mt-2 flex rounded-lg shadow-sm">
+                <input
+                  type="number"
+                  id="time-input"
+                  value={availableTime}
+                  onChange={(e) => setAvailableTime(e.target.value)}
+                  className="block w-full flex-1 rounded-none rounded-l-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
+                  placeholder="例: 60"
+                  min="1"
+                />
+                <span className="inline-flex items-center rounded-r-lg border border-l-0 border-slate-300 bg-slate-50 px-4 text-slate-600">
+                  分
+                </span>
+              </div>
+            </div>
+
+            {/* 検索モード */}
+            <div>
+              <label className="text-sm font-bold text-slate-700">
+                何を探す？
+              </label>
+              <div className="mt-2 grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setSearchMode("myActions")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
+                    searchMode === "myActions"
+                      ? "bg-white text-teal-600 shadow"
+                      : "bg-transparent text-slate-600"
+                  }`}
+                >
+                  マイピース
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchMode("nearby")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
+                    searchMode === "nearby"
+                      ? "bg-white text-teal-600 shadow"
+                      : "bg-transparent text-slate-600"
+                  }`}
+                >
+                  周辺のスポット
+                </button>
+              </div>
+            </div>
+
+            {/* 気分選択 */}
+            {searchMode === "nearby" && (
+              <div>
+                <label className="text-sm font-bold text-slate-700">
+                  どんな気分？
+                </label>
+                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {themes.map(({ key, name }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setTheme(key)}
+                      className={`p-3 rounded-lg text-sm font-semibold transition-colors border-2 ${
+                        theme === key
+                          ? "bg-orange-100 border-orange-400 text-slate-700"
+                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-          </div>
 
-          <form onSubmit={handleSearch}>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Step 2: スキマ時間を入力
-            </h2>
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <input
-                type="number"
-                id="time-input"
-                value={availableTime}
-                onChange={(e) => setAvailableTime(e.target.value)}
-                className="block w-full flex-1 rounded-none rounded-l-md border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="例: 60"
-                min="1"
-              />
-              <span className="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                分
-              </span>
-            </div>
+            {error && (
+              <p className="text-red-500 text-sm text-center pt-2">{error}</p>
+            )}
 
-            {/* Step 3: 検索モードの選択 */}
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                Step 3: 何を探す？
-              </h2>
-              <div className="flex justify-center gap-4 mb-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="searchMode"
-                    value="myActions"
-                    checked={searchMode === "myActions"}
-                    onChange={() => setSearchMode("myActions")}
-                    className="form-radio"
+            {/* メインアクションボタン */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={isSearching} // 検索中はボタンを無効化
+                className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-teal-600 transition-colors duration-200 shadow-lg hover:shadow-xl disabled:bg-slate-400 disabled:cursor-wait"
+              >
+                {/* パズルのアイコン */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
                   />
-                  マイピース
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="searchMode"
-                    value="nearby"
-                    checked={searchMode === "nearby"}
-                    onChange={() => setSearchMode("nearby")}
-                    className="form-radio"
-                  />
-                  周辺のスポット
-                </label>
-              </div>
-
-              {/* 「周辺のスポット」が選択された時だけテーマ選択を表示 */}
-              {searchMode === "nearby" && (
-                <div>
-                  <h3 className="text-md font-semibold text-gray-700 mb-3">どんな気分？</h3>
-                  {/* テーマ選択ボタン */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {themes.map(({ key, name }) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setTheme(key)}
-                          className={`p-3 rounded-lg text-sm font-semibold transition-colors ${
-                            theme === key 
-                              ? 'bg-blue-600 text-white shadow' 
-                              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                          }`}
-                        >
-                          {name}
-                        </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                </svg>
+                {isSearching ? "探しています..." : "ピースを探す"}
+              </button>
             </div>
-
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            <button
-              type="submit"
-              className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              ピースを探す
-            </button>
           </form>
         </div>
       </div>

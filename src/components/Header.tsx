@@ -1,44 +1,46 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Header() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   return (
-    <header className="bg-white shadow">
-      <div className="flex Container mx-auto px-4 py-6 justify-between items-center">
+    <header className="bg-white border-b border-slate-200">
+      <div className="flex container mx-auto px-4 py-4 justify-between items-center">
+
         <Link
           href="/"
-          className="text-2xl font-bold text-gray-800 hover:text-indigo-600"
+          className="text-2xl font-bold text-teal-500 hover:text-teal-600"
         >
           Sukima Piece
         </Link>
-        {/* ログインボタンなどここにかくよ*/}
-        <div className="flex items-center gap-4">
-          <Link href="/actions" className="text-gray-600 hover:text-indigo-600">
-            マイアクション追加
+        <div className="flex items-center gap-6">
+
+          <Link href="/actions" className="text-slate-600 hover:text-teal-500 font-medium">
+            マイアクション
           </Link>
           <Link
             href="/settings/durations"
-            className="text-gray-600 hover:text-indigo-600"
+            className="text-slate-600 hover:text-teal-500 font-medium"
           >
             滞在時間設定
           </Link>
 
-          <img
-            src={session?.user?.image || "/guest.png"}
-            alt="User Avatar"
-            width={30}
-            height={30}
-            className="rounded-full ml-4"
-          />
-          <button
-            onClick={() => signOut()}
-            className="text-gray-600 hover:text-indigo-600"
-          >
-            logout
-          </button>
+          <div className="flex items-center gap-2">
+            <img
+              src={session?.user?.image || "/guest.png"}
+              alt="User Avatar"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <button
+              onClick={() => signOut()}
+              className="text-slate-600 hover:text-teal-500 text-sm"
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
       </div>
     </header>
