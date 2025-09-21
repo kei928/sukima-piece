@@ -24,7 +24,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const [searchMode, setSearchMode] = useState<SearchMode>("myActions");
+  const [searchMode, setSearchMode] = useState<SearchMode>("nearby");
   const [theme, setTheme] = useState("relax");
 
   // handleSearchをasync関数に変更
@@ -133,17 +133,6 @@ export default function Home() {
               <div className="mt-2 grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
                 <button
                   type="button"
-                  onClick={() => setSearchMode("myActions")}
-                  className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-                    searchMode === "myActions"
-                      ? "bg-white text-teal-600 shadow"
-                      : "bg-transparent text-slate-600"
-                  }`}
-                >
-                  マイピース
-                </button>
-                <button
-                  type="button"
                   onClick={() => setSearchMode("nearby")}
                   className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
                     searchMode === "nearby"
@@ -152,6 +141,17 @@ export default function Home() {
                   }`}
                 >
                   周辺のスポット
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchMode("myActions")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
+                    searchMode === "myActions"
+                      ? "bg-white text-teal-600 shadow"
+                      : "bg-transparent text-slate-600"
+                  }`}
+                >
+                  マイピース
                 </button>
               </div>
             </div>
