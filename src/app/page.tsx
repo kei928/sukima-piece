@@ -93,7 +93,6 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-4">
       <div className="w-full max-w-lg text-center">
-        {/* メインカラーを teal-500 に変更 */}
         <h1 className="text-5xl font-extrabold text-teal-600">Sukima Piece</h1>
         <p className="mt-3 text-lg text-slate-600">
           あなたの日常に、新しいピースを。

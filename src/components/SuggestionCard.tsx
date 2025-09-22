@@ -6,34 +6,55 @@ const StarRating = ({ rating }: { rating: number }) => {
   const emptyStars = 5 - fullStars - halfStar;
   return (
     <div className="flex items-center">
-      {[...Array(fullStars)].map((_, i) => <span key={`full_${i}`} className="text-yellow-400">★</span>)}
-      {halfStar === 1 && <span className="text-yellow-400">⭐</span>} {/* ここは半分星のアイコンなどに変えても良い */}
-      {[...Array(emptyStars)].map((_, i) => <span key={`empty_${i}`} className="text-gray-300">★</span>)}
+      {[...Array(fullStars)].map((_, i) => (
+        <span key={`full_${i}`} className="text-yellow-400">
+          ★
+        </span>
+      ))}
+      {halfStar === 1 && <span className="text-yellow-400">⭐</span>}{" "}
+      {/* ここは半分星のアイコンなどに変えても良い */}
+      {[...Array(emptyStars)].map((_, i) => (
+        <span key={`empty_${i}`} className="text-gray-300">
+          ★
+        </span>
+      ))}
       <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</span>
     </div>
   );
 };
 
 type SuggestionCardProps = {
-  title: string;       
-  taskTime: number;  
-  travelTime: number; 
+  title: string;
+  taskTime: number;
+  travelTime: number;
   isPossible: boolean;
-  rating?: number; 
+  rating?: number;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 };
 
-export default function SuggestionCard({ title, taskTime, travelTime, isPossible,rating, onMouseEnter, onMouseLeave }: SuggestionCardProps) {
+export default function SuggestionCard({
+  title,
+  taskTime,
+  travelTime,
+  isPossible,
+  rating,
+  onMouseEnter,
+  onMouseLeave,
+}: SuggestionCardProps) {
   const totalTime = taskTime + travelTime;
 
   const cardClasses = `
-    bg-white p-4 rounded-lg shadow-md border-l-4 transition-all duration-200 cursor-pointer
-    ${isPossible ? 'border-green-500 hover:shadow-lg' : 'border-red-500 opacity-70'}
+    p-6 rounded-lg shadow-lg transition-all duration-300 cursor-pointer puzzle-piece transform hover:scale-105
+    ${
+      isPossible
+        ? "bg-orange-100 [filter:drop-shadow(0_0_2px_rgba(34,197,94,0.6))_drop-shadow(0_0_5px_rgba(34,197,94,0.4))]"
+        : "bg-red-50 opacity-90 [filter:drop-shadow(0_0_2px_rgba(239,68,68,0.6))_drop-shadow(0_0_5px_rgba(239,68,68,0.4))]"
+    }
   `;
 
   return (
-    <div 
+    <div
       className={cardClasses}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -48,14 +69,14 @@ export default function SuggestionCard({ title, taskTime, travelTime, isPossible
             </div>
           )}
           <div className="text-sm text-gray-600 mt-2">
-            <p>合計時間: 約 <strong>{totalTime}</strong> 分</p>
-            <p className="mt-1"> (用事: {taskTime}分 + 往復移動: {travelTime}分)</p>
+            <p>
+              合計時間: 約 <strong>{totalTime}</strong> 分
+            </p>
+            <p className="mt-1">
+              {" "}
+              (用事: {taskTime}分 + 往復移動: {travelTime}分)
+            </p>
           </div>
-        </div>
-        <div className="text-right">
-          <span className={`font-semibold ${isPossible ? 'text-green-600' : 'text-red-600'}`}>
-            {isPossible ? '✓ 可能' : '✖ 時間オーバー'}
-          </span>
         </div>
       </div>
     </div>

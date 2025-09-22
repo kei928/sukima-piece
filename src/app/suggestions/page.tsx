@@ -63,8 +63,7 @@ function SuggestionsContent() {
 
         const response = await axios.post<Suggestion[]>(apiUrl, requestBody);
 
-      setSuggestions(response.data);// APIからの提案データをセット
-      
+        setSuggestions(response.data); // APIからの提案データをセット
       } catch (err) {
         setError("提案の取得中にエラーが発生しました。");
       } finally {
@@ -88,7 +87,7 @@ function SuggestionsContent() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full">
+    <div className="flex flex-col md:flex-row h-full gap-8">
       {/* 左側: 地図エリア */}
       <div className="md:w-1/2 p-4 flex-1">
         <SuggestionsMap
@@ -104,22 +103,24 @@ function SuggestionsContent() {
           スキマ時間 ({searchParams.get("time")}分) の提案
         </h1>
         {suggestions.length > 0 ? (
-          suggestions.map((suggestion) => (
-            <Link
-              href={`/suggestions/${suggestion.id}?mode=${mode}`}
-              key={suggestion.id}
-            >
-              <SuggestionCard
-                title={suggestion.title}
-                taskTime={suggestion.duration}
-                travelTime={suggestion.travelTime}
-                isPossible={suggestion.isPossible}
-                rating={suggestion.rating}
-                onMouseEnter={() => setHighlightedId(suggestion.id)}
-                onMouseLeave={() => setHighlightedId(null)}
-              />
-            </Link>
-          ))
+          <div className="grid grid-cols-1  gap-8">
+            {suggestions.map((suggestion) => (
+              <Link
+                href={`/suggestions/${suggestion.id}?mode=${mode}`}
+                key={suggestion.id}
+              >
+                <SuggestionCard
+                  title={suggestion.title}
+                  taskTime={suggestion.duration}
+                  travelTime={suggestion.travelTime}
+                  isPossible={suggestion.isPossible}
+                  rating={suggestion.rating}
+                  onMouseEnter={() => setHighlightedId(suggestion.id)}
+                  onMouseLeave={() => setHighlightedId(null)}
+                />
+              </Link>
+            ))}
+          </div>
         ) : (
           <p className="text-gray-500">
             条件に合うアクションは見つかりませんでした。
