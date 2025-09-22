@@ -11,12 +11,17 @@ type EditActionDialogProps = {
   onActionUpdated: () => void;
 };
 
-export default function EditActionDialog({ isOpen, onClose, action, onActionUpdated }: EditActionDialogProps) {
+export default function EditActionDialog({
+  isOpen,
+  onClose,
+  action,
+  onActionUpdated,
+}: EditActionDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [duration, setDuration] = useState("");
-  
+
   // <dialog>要素への参照を作成
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
@@ -67,31 +72,115 @@ export default function EditActionDialog({ isOpen, onClose, action, onActionUpda
   };
 
   return (
-    <dialog ref={dialogRef} onClose={handleDialogClose} className="p-6 rounded-lg shadow-xl">
-      <h2 className="text-xl font-bold mb-4">アクションを編集</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* ...フォームの中身... */}
-        <div>
-          <label htmlFor="edit-title">アクション名</label>
-          <input id="edit-title" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded p-2 mt-1" required />
+    <dialog
+      ref={dialogRef}
+      onClose={handleDialogClose}
+      className="p-0 rounded-2xl shadow-xl w-full max-w-lg backdrop:bg-black/50"
+    >
+      <div className="p-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-teal-600">
+            マイアクションを編集
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-        <div>
-          <label htmlFor="edit-description">説明</label>
-          <textarea id="edit-description" value={description} onChange={e => setDescription(e.target.value)} className="w-full border rounded p-2 mt-1" />
-        </div>
-        <div>
-          <label htmlFor="edit-address">場所・住所</label>
-          <input id="edit-address" type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full border rounded p-2 mt-1" />
-        </div>
-        <div>
-          <label htmlFor="edit-duration">所要時間（分）</label>
-          <input id="edit-duration" type="number" value={duration} onChange={e => setDuration(e.target.value)} className="w-full border rounded p-2 mt-1" required />
-        </div>
-        <div className="flex justify-end gap-4 pt-4">
-          <button type="button" onClick={onClose} className="py-2 px-4 rounded bg-gray-200 hover:bg-gray-300">キャンセル</button>
-          <button type="submit" className="py-2 px-4 rounded bg-blue-600 text-white hover:bg-blue-700">保存</button>
-        </div>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label
+              htmlFor="edit-title"
+              className="block text-sm font-bold text-slate-700 mb-2"
+            >
+              アクション名
+            </label>
+            <input
+              id="edit-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="edit-description"
+              className="block text-sm font-bold text-slate-700 mb-2"
+            >
+              説明
+            </label>
+            <textarea
+              id="edit-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="edit-address"
+              className="block text-sm font-bold text-slate-700 mb-2"
+            >
+              場所・住所
+            </label>
+            <input
+              id="edit-address"
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="edit-duration"
+              className="block text-sm font-bold text-slate-700 mb-2"
+            >
+              所要時間（分）
+            </label>
+            <input
+              id="edit-duration"
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-3 px-6 rounded-lg bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition-colors"
+            >
+              キャンセル
+            </button>
+            <button
+              type="submit"
+              className="py-3 px-6 rounded-lg bg-teal-600 text-white font-bold hover:bg-teal-700 transition-colors shadow-lg hover:shadow-xl"
+            >
+              保存
+            </button>
+          </div>
+        </form>
+      </div>
     </dialog>
   );
 }

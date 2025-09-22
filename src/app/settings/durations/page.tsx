@@ -56,44 +56,59 @@ export default function DurationSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">カテゴリ別滞在時間の設定</h1>
-      <p className="mb-6 text-gray-600">
-        「周辺のスポット」を検索する際の、カテゴリごとのデフォルトの滞在時間を設定します。
-      </p>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-white p-8 rounded-lg shadow-sm"
-      >
-        {categories.map(({ key, name }) => (
-          <div key={key} className="flex items-center justify-between">
-            <label htmlFor={key} className="text-lg font-medium text-gray-700">
-              {name}
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                id={key}
-                value={durations[key] || 30} // デフォルト値は30分
-                onChange={(e) => handleInputChange(key, e.target.value)}
-                className="w-24 border-gray-300 rounded-md shadow-sm text-center"
-                min="1"
-              />
-              <span>分</span>
-            </div>
-          </div>
-        ))}
+    <div className="min-h-screen bg-slate-50 py-8">
+      <main className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+          <h1 className="text-3xl font-bold text-teal-600 mb-4 text-center">
+            カテゴリ別滞在時間の設定
+          </h1>
+          <p className="mb-8 text-slate-600 text-center">
+            「周辺のスポット」を検索する際の、
+            <br />
+            カテゴリごとのデフォルトの滞在時間を設定します。
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {categories.map(({ key, name }) => (
+              <div
+                key={key}
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+              >
+                <label
+                  htmlFor={key}
+                  className="text-lg font-medium text-slate-800"
+                >
+                  {name}
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    id={key}
+                    value={durations[key] || 30} // デフォルト値は30分
+                    onChange={(e) => handleInputChange(key, e.target.value)}
+                    className="w-28 border-slate-300 rounded-lg shadow-sm text-center text-lg py-2 focus:border-teal-500 focus:ring-teal-500"
+                    min="1"
+                  />
+                  <span className="text-slate-600">分</span>
+                </div>
+              </div>
+            ))}
 
-        <div className="text-right">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            保存する
-          </button>
-          {message && <p className="text-sm mt-4 text-center">{message}</p>}
+            <div className="text-right pt-4">
+              <button
+                type="submit"
+                className="bg-teal-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-700 transition-colors shadow-lg hover:shadow-xl"
+              >
+                保存する
+              </button>
+              {message && (
+                <p className="text-sm mt-4 text-center text-slate-500">
+                  {message}
+                </p>
+              )}
+            </div>
+          </form>
         </div>
-      </form>
+      </main>
     </div>
   );
 }

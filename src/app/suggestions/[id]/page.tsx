@@ -81,7 +81,6 @@ export default function SuggestionDetailPage() {
         } else {
           // myActions
           response = await axios.get(`/api/actions/${id}`);
-          // マイアクションの場合、住所から緯度経度を別途取得
           if (response.data.address) {
             const geoResponse = await axios.get(
               `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
@@ -105,6 +104,22 @@ export default function SuggestionDetailPage() {
 
     fetchDetails();
   }, [id, mode]);
+
+  const handleNavigation = () => {
+    const address =
+      mode === "nearby"
+        ? (details as PlaceDetails).formattedAddress
+        : (details as ActionDetails).address;
+
+    if (address) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        address
+      )}`;
+      window.open(url, "_blank");
+    } else {
+      alert("この場所の住所情報がないため、ルート案内を開始できません。");
+    }
+  };
 
   if (isLoading) return <p className="text-center p-10">読み込み中...</p>;
   if (error) return <p className="text-center p-10 text-red-500">{error}</p>;
@@ -166,7 +181,7 @@ export default function SuggestionDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-3">詳細情報</h2>
-              <div className="space-y-2 text-gray-700">
+              <div className="space-y-4 text-gray-700">
                 {mode === "myActions" && (
                   <p>
                     <strong>説明:</strong>{" "}
@@ -177,6 +192,47 @@ export default function SuggestionDetailPage() {
                   <strong>所要時間:</strong> 約{" "}
                   {(details as { duration: number }).duration} 分
                 </p>
+
+                <button
+                  onClick={handleNavigation}
+                  className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white py-3 px-6 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  ルートを見る
+                </button>
+
+                {mode === "nearby" && (details as PlaceDetails).websiteUri && (
+                  <p>
+                    <strong>ウェブサイト:</strong>{" "}
+                    <a
+                      href={(details as PlaceDetails).websiteUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      サイトを見る
+                    </a>
+                  </p>
+                )}
                 {mode === "nearby" && (details as PlaceDetails).reviews && (
                   <div className="mt-8 pt-6 border-t">
                     <h2 className="text-2xl font-bold mb-4">レビュー</h2>
@@ -200,19 +256,6 @@ export default function SuggestionDetailPage() {
                         ))}
                     </div>
                   </div>
-                )}
-                {mode === "nearby" && (details as PlaceDetails).websiteUri && (
-                  <p>
-                    <strong>ウェブサイト:</strong>{" "}
-                    <a
-                      href={(details as PlaceDetails).websiteUri}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      サイトを見る
-                    </a>
-                  </p>
                 )}
               </div>
             </div>

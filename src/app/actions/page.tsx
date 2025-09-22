@@ -74,11 +74,11 @@ export default function ActionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-slate-50">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         {/*アクション追加フォーム*/}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8">
+          <h1 className="text-3xl font-bold text-teal-600 mb-8 text-center">
             マイアクション追加
           </h1>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -86,7 +86,7 @@ export default function ActionsPage() {
             <div>
               <label
                 htmlFor="actionName"
-                className="block text-sm font-medium text-gray-900 mb-2"
+                className="block text-sm font-bold text-slate-700 mb-2"
               >
                 アクション名
               </label>
@@ -96,7 +96,7 @@ export default function ActionsPage() {
                 value={actionName}
                 onChange={(e) => setActionName(e.target.value)}
                 placeholder="例: カフェで読書"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
                 required
               />
             </div>
@@ -105,7 +105,7 @@ export default function ActionsPage() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-900 mb-2"
+                className="block text-sm font-bold text-slate-700 mb-2"
               >
                 説明（任意）
               </label>
@@ -115,7 +115,7 @@ export default function ActionsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="例: 駅前のスターバックスで"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
               ></textarea>
             </div>
 
@@ -123,7 +123,7 @@ export default function ActionsPage() {
             <div>
               <label
                 htmlFor="address"
-                className="block text-sm font-medium text-gray-900 mb-2"
+                className="block text-sm font-bold text-slate-700 mb-2"
               >
                 場所・住所（任意）
               </label>
@@ -133,7 +133,7 @@ export default function ActionsPage() {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="例: 東京都渋谷区神南１丁目２３−１０"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
               />
             </div>
 
@@ -141,7 +141,7 @@ export default function ActionsPage() {
             <div>
               <label
                 htmlFor="requiredTime"
-                className="block text-sm font-medium text-gray-900 mb-2"
+                className="block text-sm font-bold text-slate-700 mb-2"
               >
                 所要時間（分）
               </label>
@@ -151,7 +151,7 @@ export default function ActionsPage() {
                 value={requiredTime}
                 onChange={(e) => setRequiredTime(e.target.value)}
                 placeholder="例: 60"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 text-sm"
+                className="block w-full flex-1 rounded-lg border-slate-300 px-4 py-3 text-lg focus:border-teal-500 focus:ring-teal-500"
                 required
               />
             </div>
@@ -159,7 +159,7 @@ export default function ActionsPage() {
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-200"
+                className="w-full bg-teal-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
               >
                 アクションを追加する
               </button>
@@ -168,43 +168,41 @@ export default function ActionsPage() {
         </div>
 
         {/* アクション一覧 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+          <h2 className="text-3xl font-bold text-teal-600 mb-6 text-center">
             マイアクション一覧
           </h2>
           {isLoading ? (
-            <p>読み込み中...</p>
+            <p className="text-center text-slate-500">読み込み中...</p>
           ) : actions.length > 0 ? (
             <ul className="space-y-4">
               {actions.map((action) => (
                 <li
                   key={action.id}
-                  className="p-4 border rounded-lg bg-gray-50 flex justify-between items-start"
+                  className="p-6 border rounded-lg bg-slate-50 flex justify-between items-start"
                 >
                   <div>
-                    <h3 className="font-bold text-lg text-gray-800">
+                    <h3 className="font-bold text-xl text-slate-800">
                       {action.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {action.description}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-slate-600 mt-1">{action.description}</p>
+                    <p className="text-sm text-slate-500 mt-2">
                       <strong>場所:</strong> {action.address || "指定なし"}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-slate-500 mt-1">
                       <strong>所要時間:</strong> {action.duration} 分
                     </p>
                   </div>
-                  <div className="flex gap-4 items-center">
+                  <div className="flex gap-4 items-center flex-shrink-0 ml-4">
                     <button
                       onClick={() => handleEdit(action)}
-                      className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
+                      className="text-teal-600 hover:text-teal-700 font-semibold text-sm"
                     >
                       編集
                     </button>
                     <button
                       onClick={() => handleDelete(action.id)}
-                      className="text-red-500 hover:text-red-700 font-semibold text-sm"
+                      className="text-red-600 hover:text-red-700 font-semibold text-sm"
                     >
                       削除
                     </button>
@@ -213,13 +211,12 @@ export default function ActionsPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">
+            <p className="text-center text-slate-500">
               登録されているアクションはありません。
             </p>
           )}
         </div>
       </main>
-       {/* ★★★ 編集ダイアログコンポーネントを配置 ★★★ */}
       <EditActionDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

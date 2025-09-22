@@ -81,86 +81,104 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         const userActions = await prisma.action.findMany({
             where: {
                 userId,
-                address: {
-                    not: null
-                }
             },
         });
-        //アクションが一つもない場合は空配列を返す
+
         if (userActions.length === 0) {
             return NextResponse.json([], { status: 200 });
         }
-        const origins = `${latitude},${longitude}`;
-        const actionAddresses = userActions.map(action => action.address as string);
 
-        //ジオコーディングAPIを使って住所から緯度経度を取得
-        const geocodingPromises = actionAddresses.map(address => {
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
-            return axios.get<GeocodingResponse>(url);
-        });
+        // 住所があるアクションとないアクションに分割
+        const actionsWithAddress = userActions.filter(action => action.address);
+        const actionsWithoutAddress = userActions.filter(action => !action.address);
 
-        const geocodingResponses = await Promise.all(geocodingPromises);
+        let suggestions: Suggestion[] = [];
 
-        const coordinatesMap: { [address: string]: { lat: number, lng: number } } = {};
-        geocodingResponses.forEach((res, index) => {
-            if (res.data.status === 'OK' && res.data.results.length > 0) {
-                const address = actionAddresses[index];
-                coordinatesMap[address] = res.data.results[0].geometry.location;
-            }
-        });
+        // 住所があるアクションの処理
+        if (actionsWithAddress.length > 0) {
+            const origins = `${latitude},${longitude}`;
+            const actionAddresses = actionsWithAddress.map(action => action.address as string);
 
-
-
-        // まず公共交通機関(transit)で試す ここらへんなんかうまく動いてなさそう
-        const transitElements = await getDurations(origins, actionAddresses, 'transit', apiKey);
-
-        const successfulDurations: { [address: string]: number } = {};
-        const failedActions: Action[] = [];
-        transitElements.forEach((element, index) => {
-            const address = actionAddresses[index];
-            if (element.status === 'OK' && element.duration) {
-                successfulDurations[address] = element.duration.value;
-            } else {
-                failedActions.push(userActions[index]);
-            }
-        });
-
-        if (failedActions.length > 0) {
-            // 公共交通機関で失敗したアクションについては徒歩(walking)で再試行 ★
-            const failedAddresses = failedActions.map(action => action.address as string);
-            const walkingElements = await getDurations(origins, failedAddresses, 'walking', apiKey);
-
-            walkingElements.forEach((element, index) => {
-                const address = failedAddresses[index];
-                if (element.status === 'OK' && element.duration) {
-                    successfulDurations[address] = element.duration.value;
+            // ジオコーディング
+            const geocodingPromises = actionAddresses.map(address => {
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+                return axios.get<GeocodingResponse>(url);
+            });
+            const geocodingResponses = await Promise.all(geocodingPromises);
+            const coordinatesMap: { [address: string]: { lat: number, lng: number } } = {};
+            geocodingResponses.forEach((res, index) => {
+                if (res.data.status === 'OK' && res.data.results.length > 0) {
+                    const address = actionAddresses[index];
+                    coordinatesMap[address] = res.data.results[0].geometry.location;
                 }
             });
+
+            // 移動時間計算
+            const transitElements = await getDurations(origins, actionAddresses, 'transit', apiKey);
+            const successfulDurations: { [address: string]: number } = {};
+            const failedActions: Action[] = [];
+            transitElements.forEach((element, index) => {
+                const address = actionAddresses[index];
+                if (element.status === 'OK' && element.duration) {
+                    successfulDurations[address] = element.duration.value;
+                } else {
+                    failedActions.push(actionsWithAddress[index]);
+                }
+            });
+
+            if (failedActions.length > 0) {
+                const failedAddresses = failedActions.map(action => action.address as string);
+                const walkingElements = await getDurations(origins, failedAddresses, 'walking', apiKey);
+                walkingElements.forEach((element, index) => {
+                    const address = failedAddresses[index];
+                    if (element.status === 'OK' && element.duration) {
+                        successfulDurations[address] = element.duration.value;
+                    }
+                });
+            }
+
+            const suggestionsWithAddress = actionsWithAddress.map((action) => {
+                const address = action.address as string;
+                const travelTimeInSeconds = successfulDurations[address] || 0;
+                const location = coordinatesMap[address];
+                if (!location) return null;
+
+                const roundTripTravelTime = Math.ceil((travelTimeInSeconds * 2) / 60);
+                const totalTime = action.duration + roundTripTravelTime;
+
+                return {
+                    ...action,
+                    travelTime: roundTripTravelTime,
+                    totalTime,
+                    isPossible: totalTime <= availableTime,
+                    lat: location.lat,
+                    lng: location.lng,
+                };
+            }).filter((s): s is Suggestion => s !== null);
+
+            suggestions = suggestions.concat(suggestionsWithAddress);
         }
 
-        // 各アクションについて間に合うか判定
-        const suggestions: Suggestion[] = userActions.map((action) => {
-            const address = action.address as string;
-            const travelTimeInSeconds = successfulDurations[address] || 0;
-            const location = coordinatesMap[address];
-            //座標が取得できなかった場合はスキップ
-            if (!location) return null;
+        // 住所がないアクションの処理
+        if (actionsWithoutAddress.length > 0) {
+            const suggestionsWithoutAddress = actionsWithoutAddress.map((action): Suggestion => {
+                const totalTime = action.duration; // 移動時間は0
+                return {
+                    ...action,
+                    travelTime: 0,
+                    totalTime,
+                    isPossible: totalTime <= availableTime,
+                    lat: latitude,  // 現在地で実行可能と仮定
+                    lng: longitude,
+                };
+            });
+            suggestions = suggestions.concat(suggestionsWithoutAddress);
+        }
 
-            const roundTripTravelTime = Math.ceil((travelTimeInSeconds * 2) / 60);
-            const totalTime = action.duration + roundTripTravelTime;
-            const isPossible = totalTime <= availableTime;
+        // 時間内に実行可能な提案のみをフィルタリング
+        const possibleSuggestions = suggestions.filter(s => s.isPossible);
 
-            return {
-                ...action,
-                travelTime: roundTripTravelTime,
-                totalTime,
-                isPossible,
-                lat: location.lat,
-                lng: location.lng,
-            };
-        }).filter((s): s is Suggestion => s !== null); // nullを除外
-
-        return NextResponse.json(suggestions, { status: 200 });
+        return NextResponse.json(possibleSuggestions, { status: 200 });
 
     } catch (error) {
         console.error(error);
@@ -169,7 +187,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             { status: 500 },
         )
     };
-    
+
 }
 
 
