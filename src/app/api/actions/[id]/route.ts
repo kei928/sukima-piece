@@ -4,23 +4,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { PostAction } from "../route";
 
-
+// GET, PATCH, DELETE すべての引数をこの形式に統一します
 export const GET = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    const { params } = context; 
     const session = await getServerSession(authOptions);
-    const actionId = params.id;
-
+    const { id: actionId } = await params;
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { message: "認証されていません" },
         { status: 401 }
       );
     }
-    // 指定されたIDのアクションを取得し、ユーザーIDも一致するか確認
     const action = await prisma.action.findFirst({
       where: {
         id: actionId,
@@ -46,11 +43,11 @@ export const GET = async (
 
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const session = await getServerSession(authOptions);
-    const actionId = params.id;
+    const { id: actionId } = await params;
     const body: PostAction = await req.json();
 
     if (!session || !session.user?.id) {
@@ -60,7 +57,6 @@ export const PATCH = async (
       );
     }
 
-    // 更新しようとしているアクションが、本当にそのユーザーのものであるかを確認
     const actionToUpdate = await prisma.action.findUnique({
       where: { id: actionId },
     });
@@ -68,12 +64,10 @@ export const PATCH = async (
     if (!actionToUpdate || actionToUpdate.userId !== session.user.id) {
       return NextResponse.json(
         { message: "権限がありません" },
-        { status: 403 } // Forbidden
+        { status: 403 }
       );
     }
 
-
-    // アクションを更新
     const updatedAction = await prisma.action.update({
       where: { id: actionId },
       data: {
@@ -95,11 +89,11 @@ export const PATCH = async (
 
 export const DELETE = async (
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const session = await getServerSession(authOptions);
-    const actionId = params.id;
+    const { id: actionId } = await params;
 
     if (!session || !session.user?.id) {
       return NextResponse.json(
@@ -108,7 +102,6 @@ export const DELETE = async (
       );
     }
 
-    // 削除しようとしているアクションが、本当にそのユーザーのものであるかを確認
     const action = await prisma.action.findUnique({
       where: { id: actionId },
     });
@@ -116,11 +109,10 @@ export const DELETE = async (
     if (!action || action.userId !== session.user.id) {
       return NextResponse.json(
         { message: "権限がありません" },
-        { status: 403 } // Forbidden
+        { status: 403 }
       );
     }
 
-    // アクションを削除
     await prisma.action.delete({
       where: {
         id: actionId,

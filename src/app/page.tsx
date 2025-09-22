@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -83,10 +83,18 @@ export default function Home() {
 
       // /suggestionsページにパラメータを付けて遷移
       router.push(`/suggestions?${params.toString()}`);
-    } catch (err: any) {
-      setError(err);
+    } catch (err: unknown) {
+      // ★★★ 'any' を 'unknown' に変更
+      // ★★★ 型ガードを追加して安全にエラーメッセージをセット
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "string") {
+        setError(err);
+      } else {
+        setError("予期せぬエラーが発生しました。");
+      }
     } finally {
-      setIsSearching(false); // 検索終了
+      setIsSearching(false);
     }
   };
 

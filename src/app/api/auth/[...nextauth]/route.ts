@@ -1,7 +1,6 @@
 import { prisma } from '@/libs/prismaClient';
 import NextAuth, { ISODateString, type AuthOptions, type NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { JWT } from 'next-auth/jwt';
 
 declare module 'next-auth' {
     interface Session {
@@ -10,7 +9,6 @@ declare module 'next-auth' {
             email?: string | null;
             image?: string | null;
             id?: string;
-
         };
         expires: ISODateString;
     }
@@ -35,7 +33,7 @@ export const authOptions: AuthOptions = {
     ],
     secret: process.env.NEXTAUTH_SECRET as string,
     callbacks: {
-        async jwt({ token, user, account, profile, isNewUser }) {
+        async jwt({ token, account, profile }) {
             if (account && profile) {
                 const userId = account.providerAccountId;
                 token.id = userId; // トークンにIDを追加

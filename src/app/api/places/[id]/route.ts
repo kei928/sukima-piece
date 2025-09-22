@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const placeId = params.id;
+    const { id: placeId } = await params;
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
         return NextResponse.json({ message: 'Google Maps APIキーが設定されていません' }, { status: 500 });
@@ -18,7 +18,6 @@ export async function GET(
             headers: {
                 'Content-Type': 'application/json',
                 'X-Goog-Api-Key': apiKey,
-                // 取得する情報をフィールドマスクで指定
                 'X-Goog-FieldMask': 'displayName,formattedAddress,location,rating,websiteUri,photos,reviews',
             },
         });

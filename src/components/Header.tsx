@@ -33,7 +33,7 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src={session?.user?.image || "/guest.png"}
               alt="User Avatar"
               width={32}

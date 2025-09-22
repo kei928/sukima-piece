@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 //  ユーザーの滞在時間設定を取得
-export const GET = async (req: NextRequest) => {
+export const GET = async (_req: NextRequest) => {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
