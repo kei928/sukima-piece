@@ -1,37 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## Sukima Piece (スキマピース)
+あなたの「すきま時間」を、最高の「ピース」で埋めるアプリケーション
 
-First, run the development server:
+# アプリケーション概要
+Sukima Pieceは、「次の予定まで30分空いてしまった」といった日常のすきま時間を有効活用するために開発したWebアプリケーションです。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+ユーザーが**「すきま時間」と「現在地」を入力するだけで、現在地からの移動時間を含めて「その時間内に実行できること」**をリアルタイムで提案します。これにより、「何をしよう？」と悩む時間をなくし、ユーザーの日常に新たな発見と行動のきっかけを提供します。
+
+２つの提案モード
+ユーザーの状況に合わせて、2つの異なるモードで提案を行います。
+
+① マイアクション（マイピース）モード
+ユーザーが事前に登録しておいた「やりたいことリスト」（例：「〇〇カフェで読書する」「ジムで30分運動する」など）の中から、すきま時間内に行って帰ってこられるアクションだけを提案します。
+
+ 周辺のスポットモード
+「リラックスしたい」「何か食べたい」といったその時の気分を選択すると、Google Maps Platform APIと連携し、現在地周辺の施設（カフェ、公園、レストランなど）をリアルタイムで検索して提案します。
 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 技術スタック一覧
+言語: TypeScript
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+フレームワーク: Next.js (App Router)
 
-## Learn More
+データベース: Supabase (PostgreSQL)
 
-To learn more about Next.js, take a look at the following resources:
+認証: NextAuth.js
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+ORM: Prisma
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+スタイリング: Tailwind CSS
 
-## Deploy on Vercel
+外部API: Google Maps Platform (Places, Distance Matrix, Geocoding)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+地図ライブラリ: @vis.gl/react-google-maps
