@@ -250,7 +250,7 @@ export default function SuggestionDetailPage() {
                               </p>
                             </div>
                             <p className="text-gray-600 text-sm leading-relaxed">
-                              {review.text.text}
+                              {review.text?.text || "レビュー本文なし"}
                             </p>
                           </div>
                         ))}
