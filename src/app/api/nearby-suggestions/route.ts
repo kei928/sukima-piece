@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/libs/authOptions";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/libs/prismaClient";
 

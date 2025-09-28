@@ -1,7 +1,7 @@
 import { prisma } from "@/libs/prismaClient";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/libs/authOptions";
 import { PostAction } from "../route";
 
 // GET, PATCH, DELETE すべての引数をこの形式に統一します

@@ -1,7 +1,7 @@
 import { prisma } from "@/libs/prismaClient";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/libs/authOptions";
 
 //  ユーザーの滞在時間設定を取得
 export const GET = async (_req: NextRequest) => {
