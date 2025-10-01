@@ -192,7 +192,7 @@ export default function Home() {
               <p className="text-red-500 text-sm text-center pt-2">{error}</p>
             )}
 
-            {/* メインアクションボタン */}
+            {/* メインピースボタン */}
             <div className="pt-4">
               <button
                 type="submit"

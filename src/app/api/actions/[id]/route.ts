@@ -27,7 +27,7 @@ export const GET = async (
 
     if (!action) {
       return NextResponse.json(
-        { message: "アクションが見つかりません" },
+        { message: "ピースが見つかりません" },
         { status: 404 });
     }
 
@@ -35,7 +35,7 @@ export const GET = async (
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "アクションの取得に失敗しました" },
+      { message: "ピースの取得に失敗しました" },
       { status: 500 }
     );
   }
@@ -81,7 +81,7 @@ export const PATCH = async (
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "アクションの更新に失敗しました" },
+      { message: "ピースの更新に失敗しました" },
       { status: 500 }
     );
   }
@@ -120,13 +120,13 @@ export const DELETE = async (
     });
 
     return NextResponse.json(
-      { message: "アクションを削除しました" },
+      { message: "ピースを削除しました" },
       { status: 200 }
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "アクションの削除に失敗しました" },
+      { message: "ピースの削除に失敗しました" },
       { status: 500 }
     );
   }

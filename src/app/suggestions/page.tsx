@@ -123,7 +123,7 @@ function SuggestionsContent() {
           </div>
         ) : (
           <p className="text-gray-500">
-            条件に合うアクションは見つかりませんでした。
+            条件に合うピースは見つかりませんでした。
           </p>
         )}
       </div>

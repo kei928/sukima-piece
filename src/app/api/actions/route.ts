@@ -29,7 +29,7 @@ export const GET = async (_req: NextRequest): Promise<NextResponse> => {
     } catch (error) {
         console.error(error);
         return NextResponse.json(
-            { message: 'アクションの取得に失敗しました' },
+            { message: 'ピースの取得に失敗しました' },
             { status: 500 },
         );
     }

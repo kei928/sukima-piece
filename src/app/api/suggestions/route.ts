@@ -39,7 +39,7 @@ type GeocodingResponse = {
 
 export type Suggestion = Action & {
     travelTime: number; //移動時間（秒）
-    totalTime: number; //合計時間（アクションの所要時間 + 移動時間）
+    totalTime: number; //合計時間（ピースの所要時間 + 移動時間）
     isPossible: boolean; //利用可能かどうか
     lat: number; //緯度
     lng: number; //経度
@@ -77,7 +77,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             throw new Error('Google Maps APIキーが設定されていません');
         }
 
-        //ユーザーのアクションを取得
+        //ユーザーのピースを取得
         const userActions = await prisma.action.findMany({
             where: {
                 userId,
@@ -88,13 +88,13 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             return NextResponse.json([], { status: 200 });
         }
 
-        // 住所があるアクションとないアクションに分割
+        // 住所があるピースとないピースに分割
         const actionsWithAddress = userActions.filter(action => action.address);
         const actionsWithoutAddress = userActions.filter(action => !action.address);
 
         let suggestions: Suggestion[] = [];
 
-        // 住所があるアクションの処理
+        // 住所があるピースの処理
         if (actionsWithAddress.length > 0) {
             const origins = `${latitude},${longitude}`;
             const actionAddresses = actionsWithAddress.map(action => action.address as string);
@@ -159,7 +159,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             suggestions = suggestions.concat(suggestionsWithAddress);
         }
 
-        // 住所がないアクションの処理
+        // 住所がないピースの処理
         if (actionsWithoutAddress.length > 0) {
             const suggestionsWithoutAddress = actionsWithoutAddress.map((action): Suggestion => {
                 const totalTime = action.duration; // 移動時間は0

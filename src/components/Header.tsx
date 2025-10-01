@@ -23,7 +23,7 @@ export default function Header() {
         </Link>
         <div className="flex items-center gap-6">
           <Link href="/actions" className="text-slate-600 hover:text-teal-500 font-medium">
-            マイアクション
+            マイピース
           </Link>
           <Link
             href="/settings/durations"

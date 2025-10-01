@@ -61,7 +61,7 @@ export default function EditActionDialog({
       onActionUpdated();
       onClose(); // 親コンポーネントに通知して閉じる
     } catch (error) {
-      console.error("アクションの更新に失敗しました", error);
+      console.error("ピースの更新に失敗しました", error);
       alert("更新に失敗しました。");
     }
   };
@@ -80,7 +80,7 @@ export default function EditActionDialog({
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-teal-600">
-            マイアクションを編集
+            マイピースを編集
           </h2>
           <button
             onClick={onClose}
@@ -108,7 +108,7 @@ export default function EditActionDialog({
               htmlFor="edit-title"
               className="block text-sm font-bold text-slate-700 mb-2"
             >
-              アクション名
+              ピース名
             </label>
             <input
               id="edit-title"

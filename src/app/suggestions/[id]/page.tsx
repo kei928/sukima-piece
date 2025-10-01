@@ -20,7 +20,7 @@ type PlaceDetails = {
   photos?: { name: string }[];
 };
 
-// マイアクションの型
+// マイピースの型
 type ActionDetails = {
   title: string;
   description?: string;

@@ -24,13 +24,13 @@ export default function ActionsPage() {
       const response = await axios.get<Action[]>("/api/actions");
       setActions(response.data);
     } catch (error) {
-      console.error("アクションの取得に失敗しました", error);
+      console.error("ピースの取得に失敗しました", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ページが読み込まれた時に一度だけアクションを取得
+  // ページが読み込まれた時に一度だけピースを取得
   useEffect(() => {
     fetchActions();
   }, []);
@@ -48,9 +48,9 @@ export default function ActionsPage() {
       setRequiredTime("");
       setDescription("");
       setAddress("");
-      fetchActions(); // 送信後にアクション一覧を再取得
+      fetchActions(); // 送信後にピース一覧を再取得
     } catch (error) {
-      console.error("アクションの送信に失敗しました", error);
+      console.error("ピースの送信に失敗しました", error);
     }
   };
 
@@ -60,10 +60,10 @@ export default function ActionsPage() {
     }
     try {
       await axios.delete(`/api/actions/${actionId}`);
-      // 成功したら、画面からそのアクションを即座に削除して再描画
+      // 成功したら、画面からそのピースを即座に削除して再描画
       setActions(actions.filter((action) => action.id !== actionId));
     } catch (error) {
-      console.error("アクションの削除に失敗しました", error);
+      console.error("ピースの削除に失敗しました", error);
       alert("削除に失敗しました。");
     }
   };
@@ -76,19 +76,19 @@ export default function ActionsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/*アクション追加フォーム*/}
+        {/*ピース追加フォーム*/}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8">
           <h1 className="text-3xl font-bold text-teal-600 mb-8 text-center">
-            マイアクション追加
+            マイピース追加
           </h1>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* アクション名 */}
+            {/* ピース名 */}
             <div>
               <label
                 htmlFor="actionName"
                 className="block text-sm font-bold text-slate-700 mb-2"
               >
-                アクション名
+                ピース名
               </label>
               <input
                 type="text"
@@ -161,16 +161,16 @@ export default function ActionsPage() {
                 type="submit"
                 className="w-full bg-teal-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
               >
-                アクションを追加する
+                ピースを追加する
               </button>
             </div>
           </form>
         </div>
 
-        {/* アクション一覧 */}
+        {/* ピース一覧 */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
           <h2 className="text-3xl font-bold text-teal-600 mb-6 text-center">
-            マイアクション一覧
+            マイピース一覧
           </h2>
           {isLoading ? (
             <p className="text-center text-slate-500">読み込み中...</p>
@@ -212,7 +212,7 @@ export default function ActionsPage() {
             </ul>
           ) : (
             <p className="text-center text-slate-500">
-              登録されているアクションはありません。
+              登録されているピースはありません。
             </p>
           )}
         </div>
