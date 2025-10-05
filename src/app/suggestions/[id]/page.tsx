@@ -154,8 +154,8 @@ export default function SuggestionDetailPage() {
             <Image
               src={photoUrl}
               alt={(details as PlaceDetails).displayName?.text || "場所の写真"}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               priority
             />
           </div>
