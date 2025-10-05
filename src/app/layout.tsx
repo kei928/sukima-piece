@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Sukima Piece",
-  description: "Sukima Pieceは、あなたの空き時間を活用して、新しい体験や発見を提供するサービスです。短時間で楽しめるアクティビティやイベントを提案し、日常に彩りを加えます。さあ、Sukima Pieceであなたの空き時間を有意義に使いましょう！",
+  description: "そのすきま時間、何する？現在地から、今すぐできることを提案します",
   icons: {
     icon: "/logo.svg",
   },
