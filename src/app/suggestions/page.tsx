@@ -106,7 +106,7 @@ function SuggestionsContent() {
           <div className="grid grid-cols-1  gap-8">
             {suggestions.map((suggestion) => (
               <Link
-                href={`/suggestions/${suggestion.id}?mode=${mode}`}
+                href={`/suggestions/${suggestion.id}?mode=${mode}&duration=${suggestion.duration}`}
                 key={suggestion.id}
               >
                 <SuggestionCard

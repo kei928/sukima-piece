@@ -18,6 +18,7 @@ type PlaceDetails = {
     text: { text: string };
   }[];
   photos?: { name: string }[];
+  duration?: number;
 };
 
 // マイピースの型
@@ -59,6 +60,7 @@ export default function SuggestionDetailPage() {
 
   const id = params.id as string;
   const mode = searchParams.get("mode");
+  const duration = searchParams.get("duration");
 
   const [details, setDetails] = useState<PlaceDetails | ActionDetails | null>(
     null
@@ -78,6 +80,9 @@ export default function SuggestionDetailPage() {
         let response;
         if (mode === "nearby") {
           response = await axios.get(`/api/places/${id}`);
+          if (duration) {
+            response.data.duration = parseInt(duration, 10);
+          }
         } else {
           // myActions
           response = await axios.get(`/api/actions/${id}`);
@@ -103,7 +108,7 @@ export default function SuggestionDetailPage() {
     };
 
     fetchDetails();
-  }, [id, mode]);
+  }, [id, mode, duration]);
 
   const handleNavigation = () => {
     const address =

@@ -19,6 +19,7 @@ export async function GET(
                 'Content-Type': 'application/json',
                 'X-Goog-Api-Key': apiKey,
                 'X-Goog-FieldMask': 'displayName,formattedAddress,location,rating,websiteUri,photos,reviews',
+                'Accept-Language': 'ja',
             },
         });
 
