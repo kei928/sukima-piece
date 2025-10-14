@@ -1,4 +1,4 @@
-"use client";
+import { Activity } from "@/app/api/ai-suggestions/route";
 
 // シンプルなピースアイコンのSVGコンポーネント
 const PieceIcon = () => (
@@ -47,6 +47,7 @@ type SuggestionCardProps = {
   travelTime: number;
   isPossible: boolean;
   rating?: number;
+  activities?: Activity[];
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 };
@@ -57,6 +58,7 @@ export default function SuggestionCard({
   travelTime,
   isPossible,
   rating,
+  activities = [],
   onMouseEnter,
   onMouseLeave,
 }: SuggestionCardProps) {
@@ -79,8 +81,7 @@ export default function SuggestionCard({
     >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-bold text-lg text-slate-800">{title}</h3>
-          {/*ratingが存在する場合に星評価コンポーネントを表示 */}
+          <h3 className="font-bold text-xl text-slate-800">{title}</h3>
           {rating && rating > 0 && (
             <div className="mt-1">
               <StarRating rating={rating} />
@@ -91,14 +92,28 @@ export default function SuggestionCard({
               合計時間: 約 <strong>{totalTime}</strong> 分
             </p>
             <p className="mt-1">
-              {" "}
-              (用事: {taskTime}分 + 往復移動: {travelTime}分)
+              (AI推奨の滞在: {taskTime}分 + 往復移動: {travelTime}分)
             </p>
           </div>
         </div>
+        <div className="absolute top-4 right-4">
+          <PieceIcon />
+        </div>
       </div>
-      <div className="absolute top-4 right-4">
-        <PieceIcon />
+
+      {/* AIによる過ごし方の提案を表示する部分 */}
+      <div className="mt-4 pt-4 border-t border-slate-200">
+        <h4 className="text-sm font-bold text-teal-600 mb-2">
+          🤖 こんな過ごし方はどう？
+        </h4>
+        <div className="space-y-2">
+          {activities.slice(0, 2).map((activity, index) => (
+            <div key={index} className="flex items-start gap-2 text-sm">
+              <span className="text-lg">{activity.icon}</span>
+              <p className="text-slate-700">{activity.title}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
