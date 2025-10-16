@@ -36,7 +36,7 @@ type Place = {
         openNow: boolean;
     };
     rating?: number;
-    types?: string[]; 
+    types?: string[];
 };
 
 
@@ -72,10 +72,6 @@ const searchPlacesByCategory = (category: string, latitude: number, longitude: n
 export const POST = async (req: NextRequest) => {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ message: "認証されていません" }, { status: 401 });
-        }
-
         const { latitude, longitude, theme, availableTime }: NearbyRequest = await req.json();
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -100,12 +96,14 @@ export const POST = async (req: NextRequest) => {
             return NextResponse.json([], { status: 200 });
         }
 
-         // データベースからユーザーの滞在時間設定を取得
-        const durationSettings = await prisma.categoryDuration.findMany({
-            where: { userId: session.user.id },
-        });
-        const durationMap = new Map(durationSettings.map(d => [d.category, d.duration]));
-
+        const durationMap = new Map<string, number>();
+        // ログインしている場合のみ、DBから滞在時間設定を取得
+        if (session?.user?.id) {
+            const durationSettings = await prisma.categoryDuration.findMany({
+                where: { userId: session.user.id },
+            });
+            durationSettings.forEach(d => durationMap.set(d.category, d.duration));
+        }
 
         // 各場所までの移動時間を計算
         const origin = `${latitude},${longitude}`;
@@ -127,7 +125,7 @@ export const POST = async (req: NextRequest) => {
 
             const travelTimeInSeconds = element.duration.value;
             const roundtripTravelTime = Math.ceil((travelTimeInSeconds * 2) / 60);
-            
+
             const totalTime = stayDuration + roundtripTravelTime;
 
             if (totalTime <= availableTime) {
