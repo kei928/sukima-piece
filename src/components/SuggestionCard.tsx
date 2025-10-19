@@ -28,7 +28,7 @@ const StarRating = ({ rating }: { rating: number }) => {
                     ★
                 </span>
             ))}
-            {halfStar && <span className="text-yellow-400">⭐</span>}
+            {halfStar && <span className="text-yellow-400">★</span>}
             {[...Array(emptyStars)].map((_, i) => (
                 <span key={`empty_${i}`} className="text-gray-300">
                     ★
