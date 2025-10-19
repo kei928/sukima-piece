@@ -27,7 +27,7 @@ export default function Home() {
   const [searchMode, setSearchMode] = useState<SearchMode>("nearby");
   const [theme, setTheme] = useState("relax");
 
-  // handleSearchをasync関数に変更
+   // handleSearchをasync関数に変更
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -37,7 +37,7 @@ export default function Home() {
       return;
     }
 
-    setIsSearching(true); // 検索開始
+    setIsSearching(true);
 
     // 現在地を取得するPromise
     const getCurrentLocation = (): Promise<Location> => {
@@ -60,6 +60,12 @@ export default function Home() {
             reject(
               "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
             );
+          },
+          // オプションを追加
+          {
+            enableHighAccuracy: false, // 高精度な位置情報は求めない（速度優先）
+            timeout: 10000, // 10秒以内に取得できなければタイムアウト
+            maximumAge: 60000, // 1分以内のキャッシュされた位置情報があれば利用する
           }
         );
       });
@@ -69,7 +75,7 @@ export default function Home() {
       // 位置情報を取得
       const location = await getCurrentLocation();
 
-      // URLクエリパラメータを作成
+       // URLクエリパラメータを作成
       const params = new URLSearchParams({
         time: availableTime,
         lat: location.latitude.toString(),
@@ -84,8 +90,6 @@ export default function Home() {
       // /suggestionsページにパラメータを付けて遷移
       router.push(`/suggestions?${params.toString()}`);
     } catch (err: unknown) {
-      // ★★★ 'any' を 'unknown' に変更
-      // ★★★ 型ガードを追加して安全にエラーメッセージをセット
       if (err instanceof Error) {
         setError(err.message);
       } else if (typeof err === "string") {

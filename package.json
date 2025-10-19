@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.14.0",
     "@vercel/speed-insights": "^1.2.0",
     "@vis.gl/react-google-maps": "^1.5.5",

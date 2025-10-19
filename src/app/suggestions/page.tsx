@@ -4,21 +4,30 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import SuggestionCard from "@/components/SuggestionCard";
-import { Suggestion as ApiSuggestion } from "../api/suggestions/route";
 import SuggestionsMap from "@/components/SuggestionsMap";
 import Link from "next/link";
+import { Activity } from "../api/ai-suggestions/route"; // AIが生成する過ごし方の型をインポート
+import { Suggestion as ApiSuggestion } from "../api/suggestions/route"; // 既存の型をインポート
 
-export type Suggestion = ApiSuggestion & {
-  rating?: number;
+// ページ内で使用するSuggestionの型を拡張
+export type Suggestion = (ApiSuggestion | { rating?: number; activities: Activity[] }) & {
+  id: string;
+  title: string;
+  travelTime: number;
+  totalTime: number;
+  isPossible: boolean;
+  lat: number;
+  lng: number;
+  duration: number;
 };
 
-// useSearchParamsをラップするコンポーネント
+// メインの処理コンポーネント
 function SuggestionsContent() {
   const searchParams = useSearchParams();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null); // ハイライト用State
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const mode = searchParams.get("mode");
 
   const currentLocation = {
@@ -42,17 +51,15 @@ function SuggestionsContent() {
         let apiUrl = "";
         let requestBody = {};
 
-        // modeに応じてAPIのURLとリクエストボディを切り替える
         if (mode === "nearby") {
           apiUrl = "/api/nearby-suggestions";
           requestBody = {
             availableTime: Number(time),
             latitude: currentLocation.lat,
             longitude: currentLocation.lng,
-            theme: theme || "relax", // デフォルトは'relax'
+            theme: theme || "relax",
           };
         } else {
-          // デフォルトは 'myActions'
           apiUrl = "/api/suggestions";
           requestBody = {
             availableTime: Number(time),
@@ -62,64 +69,79 @@ function SuggestionsContent() {
         }
 
         const response = await axios.post<Suggestion[]>(apiUrl, requestBody);
-
-        setSuggestions(response.data); // APIからの提案データをセット
+        setSuggestions(response.data);
       } catch (err) {
         setError("提案の取得中にエラーが発生しました。");
+        setIsLoading(false);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchSuggestions();
+    
+    if (!isNaN(currentLocation.lat) && !isNaN(currentLocation.lng)) {
+        fetchSuggestions();
+    } else {
+        setError("無効な座標です。");
+        setIsLoading(false);
+    }
   }, [searchParams, currentLocation.lat, currentLocation.lng]);
 
   if (isLoading) {
-    return <p className="text-center">提案を探しています...</p>;
+    return (
+      <div className="text-center p-10">
+        <p className="text-lg font-semibold text-teal-600">
+          AIがあなたにぴったりの過ごし方を考えています...
+        </p>
+        <p className="text-slate-500 mt-2">
+          周辺のスポット情報と合わせて、最適な滞在時間と過ごし方を提案します。
+        </p>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
-  }
-
-  // 緯度経度が不正な場合はエラー表示
-  if (isNaN(currentLocation.lat) || isNaN(currentLocation.lng)) {
-    return <p className="text-center mt-10 text-red-500">無効な座標です。</p>;
+    return <p className="text-center text-red-500 p-10">{error}</p>;
   }
 
   return (
     <div className="flex flex-col md:flex-row h-full gap-8">
-      {/* 左側: 地図エリア */}
       <div className="md:w-1/2 p-4 flex-1">
         <SuggestionsMap
-          suggestions={suggestions}
+          suggestions={suggestions as unknown as ApiSuggestion[]}
           currentLocation={currentLocation}
           highlightedId={highlightedId}
         />
       </div>
-
-      {/* 右側: リストエリア */}
       <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto flex-1">
         <h1 className="text-2xl font-bold text-gray-800">
           スキマ時間 ({searchParams.get("time")}分) の提案
         </h1>
         {suggestions.length > 0 ? (
-          <div className="grid grid-cols-1  gap-8">
-            {suggestions.map((suggestion) => (
-              <Link
-                href={`/suggestions/${suggestion.id}?mode=${mode}&duration=${suggestion.duration}`}
-                key={suggestion.id}
-              >
-                <SuggestionCard
-                  title={suggestion.title}
-                  taskTime={suggestion.duration}
-                  travelTime={suggestion.travelTime}
-                  isPossible={suggestion.isPossible}
-                  rating={suggestion.rating}
-                  onMouseEnter={() => setHighlightedId(suggestion.id)}
-                  onMouseLeave={() => setHighlightedId(null)}
-                />
-              </Link>
-            ))}
+          <div className="grid grid-cols-1 gap-8">
+            {suggestions.map((suggestion) => {
+              // activities がある場合のみURLパラメータとして渡す
+              const suggestionActivities = 'activities' in suggestion ? suggestion.activities : [];
+              const href = `/suggestions/${suggestion.id}?mode=${mode}&duration=${suggestion.duration}${
+                suggestionActivities.length > 0
+                  ? `&activities=${encodeURIComponent(JSON.stringify(suggestionActivities))}`
+                  : ''
+              }`;
+
+              return (
+                <Link href={href} key={suggestion.id}>
+                  <SuggestionCard
+                    title={suggestion.title}
+                    taskTime={suggestion.duration}
+                    travelTime={suggestion.travelTime}
+                    isPossible={suggestion.isPossible}
+                    rating={'rating' in suggestion ? suggestion.rating : undefined}
+                    activities={'activities' in suggestion ? suggestion.activities : undefined}
+                    onMouseEnter={() => setHighlightedId(suggestion.id)}
+                    onMouseLeave={() => setHighlightedId(null)}
+                  />
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <p className="text-gray-500">

@@ -1,6 +1,5 @@
-"use client";
+import { Activity } from "@/app/api/ai-suggestions/route";
 
-// シンプルなピースアイコンのSVGコンポーネント
 const PieceIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -17,29 +16,29 @@ const PieceIcon = () => (
     />
   </svg>
 );
-
-
 const StarRating = ({ rating }: { rating: number }) => {
-  const fullStars = Math.floor(rating);
-  const halfStar = rating % 1 >= 0.5 ? 1 : 0;
-  const emptyStars = 5 - fullStars - halfStar;
-  return (
-    <div className="flex items-center">
-      {[...Array(fullStars)].map((_, i) => (
-        <span key={`full_${i}`} className="text-yellow-400">
-          ★
-        </span>
-      ))}
-      {halfStar === 1 && <span className="text-yellow-400">⭐</span>}
-      {[...Array(emptyStars)].map((_, i) => (
-        <span key={`empty_${i}`} className="text-gray-300">
-          ★
-        </span>
-      ))}
-      <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</span>
-    </div>
-  );
+    if (!rating) return null;
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    return (
+        <div className="flex items-center">
+            {[...Array(fullStars)].map((_, i) => (
+                <span key={`full_${i}`} className="text-yellow-400">
+                    ★
+                </span>
+            ))}
+            {halfStar && <span className="text-yellow-400">★</span>}
+            {[...Array(emptyStars)].map((_, i) => (
+                <span key={`empty_${i}`} className="text-gray-300">
+                    ★
+                </span>
+            ))}
+            <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</span>
+        </div>
+    );
 };
+
 
 type SuggestionCardProps = {
   title: string;
@@ -47,6 +46,8 @@ type SuggestionCardProps = {
   travelTime: number;
   isPossible: boolean;
   rating?: number;
+  // activitiesプロパティをオプショナル（任意）として追加
+  activities?: Activity[]; 
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 };
@@ -57,6 +58,7 @@ export default function SuggestionCard({
   travelTime,
   isPossible,
   rating,
+  activities,
   onMouseEnter,
   onMouseLeave,
 }: SuggestionCardProps) {
@@ -64,11 +66,7 @@ export default function SuggestionCard({
 
   const cardClasses = `
     p-6 bg-white rounded-lg shadow-md transition-all duration-300 cursor-pointer transform hover:scale-105 relative border-l-4
-    ${
-      isPossible
-        ? "border-teal-500"
-        : "border-red-500"
-    }
+    ${isPossible ? "border-teal-500" : "border-red-500"}
   `;
 
   return (
@@ -79,8 +77,7 @@ export default function SuggestionCard({
     >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-bold text-lg text-slate-800">{title}</h3>
-          {/*ratingが存在する場合に星評価コンポーネントを表示 */}
+          <h3 className="font-bold text-xl text-slate-800">{title}</h3>
           {rating && rating > 0 && (
             <div className="mt-1">
               <StarRating rating={rating} />
@@ -91,15 +88,31 @@ export default function SuggestionCard({
               合計時間: 約 <strong>{totalTime}</strong> 分
             </p>
             <p className="mt-1">
-              {" "}
-              (用事: {taskTime}分 + 往復移動: {travelTime}分)
+              (滞在: {taskTime}分 + 往復移動: {travelTime}分)
             </p>
           </div>
         </div>
+        <div className="absolute top-4 right-4">
+          <PieceIcon />
+        </div>
       </div>
-      <div className="absolute top-4 right-4">
-        <PieceIcon />
-      </div>
+
+      {/* activities が存在する場合に「過ごし方」セクションを表示 */}
+      {activities && activities.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-slate-200">
+          <h4 className="text-sm font-bold text-teal-600 mb-2">
+            🤖 こんな過ごし方はどう？
+          </h4>
+          <div className="space-y-2">
+            {activities.slice(0, 2).map((activity, index) => (
+              <div key={index} className="flex items-start gap-2 text-sm">
+                <span className="text-lg">{activity.icon}</span>
+                <p className="text-slate-700">{activity.title}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

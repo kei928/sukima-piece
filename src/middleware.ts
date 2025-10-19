@@ -9,7 +9,12 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret });
   const { pathname } = req.nextUrl;
 
-  // ログイン済みのユーザーが/loginにアクセスしたらトップへ
+  // APIルートへのリクエストはMiddlewareの対象外にする
+  // 認証APIルート（/api/auth）へのリクエストはMiddlewareの対象外にする
+  if (pathname.startsWith('/api/auth')) {
+    return NextResponse.next();
+  }
+  // ログイン済みのユーザーが/loginページにアクセスした場合トップページ(`/`)にリダイレクト
   if (token && pathname.startsWith('/login')) {
     return NextResponse.redirect(new URL('/', req.url));
   }
