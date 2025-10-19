@@ -10,6 +10,11 @@ export async function middleware(req: NextRequest) {
   // 現在アクセスしようとしているページのパスを取得
   const { pathname } = req.nextUrl;
 
+  // APIルートへのリクエストはMiddlewareの対象外にする
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   // ログイン済みのユーザーが/loginページにアクセスした場合トップページ(`/`)にリダイレクト
   if (token && pathname.startsWith('/login')) {
     return NextResponse.redirect(new URL('/', req.url));
@@ -17,10 +22,6 @@ export async function middleware(req: NextRequest) {
 
   // 未ログインのユーザーが保護されたページ（/login以外）にアクセスした場合ログインページ(`/login`)にリダイレクト
   if (!token && !pathname.startsWith('/login')) {
-    // 認証用のAPIルートは除外
-    if (pathname.startsWith('/api/auth')) {
-      return NextResponse.next();
-    }
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
