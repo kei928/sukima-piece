@@ -60,6 +60,11 @@ export default function Home() {
             reject(
               "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
             );
+          },// オプションを調整
+          {
+            enableHighAccuracy: true, // より高精度な位置情報を要求する
+            timeout: 20000, // タイムアウト時間を20秒
+            maximumAge: 0, // キャッシュされた位置情報は利用しない
           }
         );
       });
