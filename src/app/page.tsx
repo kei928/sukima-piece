@@ -27,7 +27,7 @@ export default function Home() {
   const [searchMode, setSearchMode] = useState<SearchMode>("nearby");
   const [theme, setTheme] = useState("relax");
 
-   // handleSearchをasync関数に変更
+  // handleSearchをasync関数に変更
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -43,8 +43,11 @@ export default function Home() {
     const getCurrentLocation = (): Promise<Location> => {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
+          // Geolocation APIがサポートされていない場合のエラー
           reject(
-            "お使いのブラウザでは位置情報サービスがサポートされていません。"
+            new Error(
+              "お使いのブラウザでは位置情報サービスがサポートされていません。"
+            )
           );
           return;
         }
@@ -56,16 +59,30 @@ export default function Home() {
             });
           },
           (err) => {
-            console.log(err);
-            reject(
-              "位置情報の取得に失敗しました。ブラウザの設定を確認してください。"
-            );
+            console.error("位置情報取得エラー:", err); // エラーの詳細をコンソールに出力
+            // エラーコードに応じたメッセージを生成
+            let message = "位置情報の取得に失敗しました。";
+            switch (err.code) {
+              case 1: // PERMISSION_DENIED
+                message =
+                  "位置情報の利用が許可されていません。ブラウザまたはデバイスの設定を確認してください。";
+                break;
+              case 2: // POSITION_UNAVAILABLE
+                message =
+                  "現在位置を取得できませんでした。ネットワーク環境やGPSの受信状況を確認してください。";
+                break;
+              case 3: // TIMEOUT
+                message =
+                  "位置情報の取得がタイムアウトしました。電波の良い場所で再度お試しください。";
+                break;
+            }
+            reject(new Error(message)); // Errorオブジェクトでrejectする
           },
-          // オプションを追加
+          // オプションを調整
           {
-            enableHighAccuracy: false, // 高精度な位置情報は求めない（速度優先）
-            timeout: 10000, // 10秒以内に取得できなければタイムアウト
-            maximumAge: 60000, // 1分以内のキャッシュされた位置情報があれば利用する
+            enableHighAccuracy: true, // より高精度な位置情報を要求する
+            timeout: 20000, // タイムアウト時間を20秒
+            maximumAge: 0, // キャッシュされた位置情報は利用しない
           }
         );
       });
@@ -75,7 +92,7 @@ export default function Home() {
       // 位置情報を取得
       const location = await getCurrentLocation();
 
-       // URLクエリパラメータを作成
+      // URLクエリパラメータを作成
       const params = new URLSearchParams({
         time: availableTime,
         lat: location.latitude.toString(),
@@ -90,12 +107,13 @@ export default function Home() {
       // /suggestionsページにパラメータを付けて遷移
       router.push(`/suggestions?${params.toString()}`);
     } catch (err: unknown) {
+      // 必ずErrorオブジェクトのmessageを使うようにする
       if (err instanceof Error) {
         setError(err.message);
-      } else if (typeof err === "string") {
-        setError(err);
       } else {
-        setError("予期せぬエラーが発生しました。");
+        // 予期せぬエラーの場合
+        setError("位置情報の取得中に予期せぬエラーが発生しました。");
+        console.error("予期せぬエラー:", err); // 予期せぬエラーの詳細もログに出力
       }
     } finally {
       setIsSearching(false);
