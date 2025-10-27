@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation"; // useSearchParams をインポート
 import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import SuggestionCard from "@/components/SuggestionCard";
@@ -18,12 +18,14 @@ export type Suggestion = (ApiSuggestion | { rating?: number; activities: Activit
   isPossible: boolean;
   lat: number;
   lng: number;
-  duration: number;
+  duration: number; // この duration は AI が推定した滞在時間 or マイピースの所要時間
 };
 
 // メインの処理コンポーネント
 function SuggestionsContent() {
   const searchParams = useSearchParams();
+  // 元の利用可能時間を取得
+  const availableTime = searchParams.get("time");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ function SuggestionsContent() {
         setIsLoading(false);
       }
     };
-    
+
     if (!isNaN(currentLocation.lat) && !isNaN(currentLocation.lng)) {
         fetchSuggestions();
     } else {
@@ -107,6 +109,8 @@ function SuggestionsContent() {
     <div className="flex flex-col md:flex-row h-full gap-8">
       <div className="md:w-1/2 p-4 flex-1">
         <SuggestionsMap
+          // SuggestionsMap は ApiSuggestion[] を期待しているため、型アサーションが必要な場合があります
+          // 必要に応じて SuggestionsMap の Props 型定義を修正するか、ここでキャストしてください
           suggestions={suggestions as unknown as ApiSuggestion[]}
           currentLocation={currentLocation}
           highlightedId={highlightedId}
@@ -119,22 +123,18 @@ function SuggestionsContent() {
         {suggestions.length > 0 ? (
           <div className="grid grid-cols-1 gap-8">
             {suggestions.map((suggestion) => {
-              // activities がある場合のみURLパラメータとして渡す
-              const suggestionActivities = 'activities' in suggestion ? suggestion.activities : [];
-              const href = `/suggestions/${suggestion.id}?mode=${mode}&duration=${suggestion.duration}${
-                suggestionActivities.length > 0
-                  ? `&activities=${encodeURIComponent(JSON.stringify(suggestionActivities))}`
-                  : ''
-              }`;
+              // activitiesパラメータを削除し、availableTimeを追加
+              const href = `/suggestions/${suggestion.id}?mode=${mode}&duration=${suggestion.duration}&availableTime=${availableTime}`;
 
               return (
                 <Link href={href} key={suggestion.id}>
                   <SuggestionCard
                     title={suggestion.title}
-                    taskTime={suggestion.duration}
+                    taskTime={suggestion.duration} // AI推奨滞在時間 or マイピースの所要時間
                     travelTime={suggestion.travelTime}
                     isPossible={suggestion.isPossible}
                     rating={'rating' in suggestion ? suggestion.rating : undefined}
+                    // カードには AI 提案の概要（activities）を渡す
                     activities={'activities' in suggestion ? suggestion.activities : undefined}
                     onMouseEnter={() => setHighlightedId(suggestion.id)}
                     onMouseLeave={() => setHighlightedId(null)}
@@ -156,6 +156,7 @@ function SuggestionsContent() {
 export default function SuggestionsPage() {
   return (
     <div className="h-[calc(100vh-88px)]">
+      {/* Suspense は Client Component 内でのデータフェッチ中のフォールバックUIを提供します */}
       <Suspense fallback={<p className="text-center mt-10">読み込み中...</p>}>
         <SuggestionsContent />
       </Suspense>
