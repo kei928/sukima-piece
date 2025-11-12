@@ -1,6 +1,9 @@
 
 ## Sukima Piece (スキマピース)
-あなたの「すきま時間」を、最高の「ピース」で埋めるアプリケーション
+あなたの「すきま時間」を、最高の「ピース」で埋めるアプリケーションです。
+
+# 背景　
+友人がインターンなどで出先に行ったときに周りに何があるかわからないし、何分かかるかわからないという課題があったので、それを解決するために制作した。
 
 # アプリケーション概要
 Sukima Pieceは、「次の予定まで30分空いてしまった」といった日常のすきま時間を有効活用するために開発したWebアプリケーションです。
@@ -15,6 +18,8 @@ Sukima Pieceは、「次の予定まで30分空いてしまった」といった
 
  周辺のスポットモード
 「リラックスしたい」「何か食べたい」といったその時の気分を選択すると、Google Maps Platform APIと連携し、現在地周辺の施設（カフェ、公園、レストランなど）をリアルタイムで検索して提案します。
+
+
 
 
 
@@ -34,3 +39,6 @@ ORM: Prisma
 外部API: Google Maps Platform (Places, Distance Matrix, Geocoding)
 
 地図ライブラリ: @vis.gl/react-google-maps
+
+## figmaにて簡単にではあるが画面遷移図的なのをつくったやつ
+<img width="987" height="437" alt="image" src="https://github.com/user-attachments/assets/9c55caa6-76d1-4dc0-a499-a7cfe603f83f" />
